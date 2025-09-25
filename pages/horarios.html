@@ -1,0 +1,40 @@
+<h1>Horarios</h1>
+
+<div id="schedules-container">
+    <div class="toolbar">
+        <div class="form-group">
+            <label for="schedule-selector">Mi Horario:</label>
+            <select id="schedule-selector"></select>
+        </div>
+        <div class="schedule-actions">
+            <button id="new-schedule-btn" class="control-btn">Nuevo</button>
+            <button id="save-schedule-btn" class="control-btn">Guardar</button>
+            <button id="delete-schedule-btn" class="control-btn">Eliminar</button>
+        </div>
+    </div>
+
+    <div class="toolbar">
+        <div class="schedule-edits">
+            <button id="add-row-btn">+ Fila</button>
+            <button id="add-col-btn">+ Columna</button>
+            <button id="remove-row-btn">- Fila</button>
+            <button id="remove-col-btn">- Columna</button>
+        </div>
+    </div>
+
+    <div id="schedule-grid-wrapper">
+        <table id="schedule-table"></table>
+    </div>
+</div>
+
+<!-- Modal para nuevo horario -->
+<div id="schedule-name-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h3>Nombre del Horario</h3>
+        <form id="schedule-name-form">
+            <input type="text" id="schedule-name-input" placeholder="Ej. Horario Semestre 1" required>
+            <button type="submit">Crear</button>
+        </form>
+    </div>
+</div>

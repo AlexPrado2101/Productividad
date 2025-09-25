@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productividad App</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Icons+Outlined" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <button class="menu-toggle">
+            <span class="material-icons-outlined">menu</span>
+        </button>
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Menú</h2>
+                <div class="global-search-wrapper">
+                    <span class="material-icons-outlined">search</span>
+                    <input type="search" id="global-search-input" placeholder="Buscar en todo...">
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" data-page="calendario">
+                    <span class="material-icons-outlined">calendar_today</span>
+                    <span>Calendario</span>
+                </a>
+                <a href="#" data-page="horarios">
+                    <span class="material-icons-outlined">schedule</span>
+                    <span>Horarios</span>
+                </a>
+                <a href="#" data-page="notas">
+                    <span class="material-icons-outlined">school</span>
+                    <span>Notas académicas</span>
+                </a>
+                <a href="#" data-page="ingles">
+                    <span class="material-icons-outlined">language</span>
+                    <span>Estudio de inglés</span>
+                </a>
+                <a href="#" data-page="dibujo">
+                    <span class="material-icons-outlined">palette</span>
+                    <span>Dibujo</span>
+                </a>
+                <a href="#" data-page="ejercicio">
+                    <span class="material-icons-outlined">fitness_center</span>
+                    <span>Ejercicio físico</span>
+                </a>
+                <a href="#" data-page="alimentacion">
+                    <span class="material-icons-outlined">restaurant</span>
+                    <span>Alimentación</span>
+                </a>
+                <a href="#" data-page="tareas">
+                    <span class="material-icons-outlined">list_alt</span>
+                    <span>Lista de tareas</span>
+                </a>
+                <a href="#" data-page="ajustes">
+                    <span class="material-icons-outlined">settings</span>
+                    <span>Ajustes</span>
+                </a>
+            </nav>
+        </aside>
+        <main id="main-content" class="main-content">
+            <!-- El contenido de las páginas ahora vive aquí, oculto por defecto -->
+
+            <!-- Página: Calendario -->
+            <div id="page-calendario" class="page-wrapper" style="display: none;">
+                <h1>Calendario de Progreso</h1>
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button id="prev-month-btn" class="control-btn">&lt;</button>
+                        <h2 id="month-year-display"></h2>
+                        <button id="next-month-btn" class="control-btn">&gt;</button>
+                    </div>
+                    <div class="calendar-grid-header">
+                        <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
+                    </div>
+                    <div id="calendar-grid" class="calendar-grid">
+                        <!-- Los días se generarán aquí -->
+                    </div>
+                </div>
+                <!-- Modal para detalles del día -->
+                <div id="day-detail-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3 id="day-detail-title"></h3><ul id="day-detail-list"></ul></div></div>
+            </div>
+
+            <!-- Página: Horarios -->
+            <div id="page-horarios" class="page-wrapper" style="display: none;">
+                <div id="schedules-container">
+                    <h1>Horarios</h1>
+                    <div class="toolbar">
+                        <div class="form-group">
+                            <label for="schedule-selector">Mi Horario:</label>
+                            <select id="schedule-selector"></select>
+                        </div>
+                        <div class="schedule-actions">
+                            <button id="new-schedule-btn" class="control-btn"><span class="material-icons-outlined">add</span>Nuevo</button>
+                            <button id="save-schedule-btn" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button>
+                            <button id="delete-schedule-btn" class="control-btn"><span class="material-icons-outlined">delete</span>Eliminar</button>
+                        </div>
+                    </div>
+
+                    <div class="toolbar">
+                        <div class="form-group">
+                            <label for="schedule-interval-select">Intervalo de tiempo (min):</label>
+                            <select id="schedule-interval-select">
+                                <option value="15">15</option>
+                                <option value="30">30</option>
+                                <option value="45">45</option>
+                                <option value="60" selected>60</option>
+                            </select>
+                        </div>
+                    </div>
+                
+                    <div class="toolbar">
+                        <div class="schedule-edits">
+                            <button id="add-row-btn">+ Fila</button>
+                            <button id="add-col-btn">+ Columna</button>
+                            <button id="remove-row-btn">- Fila</button>
+                            <button id="remove-col-btn">- Columna</button>
+                        </div>
+                        <div class="schedule-autogen">
+                            <label for="autogen-hours-select">Autogenerar:</label>
+                            <select id="autogen-hours-select">
+                                <option value="8">8 horas</option>
+                                <option value="6">6 horas</option>
+                                <option value="4">4 horas</option>
+                                <option value="2">2 horas</option>
+                            </select>
+                            <button id="autogen-btn" class="control-btn"><span class="material-icons-outlined">auto_awesome</span>Generar</button>
+                        </div>
+                    </div>
+                
+                    <div id="schedule-grid-wrapper">
+                        <table id="schedule-table"></table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Página: Notas Académicas -->
+            <div id="page-notas" class="page-wrapper" style="display: none;">
+                <h1>Notas Académicas</h1>
+
+                <div id="notes-container">
+                    <!-- Vista Principal: Lista de Materias -->
+                    <div id="subjects-list-view">
+                        <h2>Mis Materias</h2>
+                        <button id="add-subject-btn" class="control-btn"><span class="material-icons-outlined">add</span> Añadir Materia</button>
+                        <div id="subjects-list"></div>
+                    </div>
+
+                    <!-- Vista de Detalle: Materia Individual (oculta por defecto) -->
+                    <div id="subject-detail-view" style="display: none;">
+                        <button id="back-to-subjects-btn" class="control-btn"><span class="material-icons-outlined">arrow_back</span> Volver</button>
+                        <h2 id="subject-title"></h2>
+
+                        <div class="subject-detail-layout">
+                            <!-- Columna de Resumen -->
+                            <div class="subject-summary-column">
+                                <div class="percentages-container card">
+                                    <h4>Ponderación (%)</h4>
+                                    <div class="percentage-item"><span>Notas Diarias:</span> <input type="number" class="percentage-input" data-category="daily" min="0" max="100" value="30">%</div>
+                                    <div class="percentage-item"><span>Apreciación:</span> <input type="number" class="percentage-input" data-category="appreciation" min="0" max="100" value="20">%</div>
+                                    <div class="percentage-item"><span>Examen Final:</span> <input type="number" class="percentage-input" data-category="final_exam" min="0" max="100" value="50">%</div>
+                                    <div id="percentage-total-error" style="color: red; display: none;">El total debe ser 100%.</div>
+                                </div>
+                                <div class="grades-summary card">
+                                    <h4>Promedios</h4>
+                                    <p>Notas Diarias: <span id="avg-daily">N/A</span></p>
+                                    <p>Apreciación: <span id="avg-appreciation">N/A</span></p>
+                                    <p>Examen Final: <span id="avg-final_exam">N/A</span></p>
+                                    <hr>
+                                    <p><strong>Promedio Final: <span id="avg-final">N/A</span></strong></p>
+                                </div>
+                            </div>
+
+                            <!-- Columna de Contenido con Pestañas -->
+                            <div class="subject-content-column">
+                                <div class="tab-switcher">
+                                    <button class="tab-btn active" data-tab="grades">Calificaciones</button>
+                                    <button class="tab-btn" data-tab="tasks">Tareas</button>
+                                </div>
+                                <div id="grades-tab-content" class="tab-content active">
+                                    <button id="add-grade-btn" class="control-btn"><span class="material-icons-outlined">add</span> Añadir Nota</button>
+                                    <div id="grades-list"></div>
+                                </div>
+                                <div id="tasks-tab-content" class="tab-content">
+                                    <button id="add-task-btn" class="control-btn"><span class="material-icons-outlined">add</span> Añadir Tarea</button>
+                                    <div id="tasks-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modales -->
+                <div id="subject-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Materia</h3><form id="subject-form"><input type="hidden" id="subject-id"><input type="text" id="subject-name-input" placeholder="Nombre de la materia" required><button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button></form></div></div>
+                <div id="grade-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Nota</h3><form id="grade-form"><input type="hidden" id="grade-id"><input type="text" id="grade-title-input" placeholder="Título (ej. Parcial 1)" required><input type="number" id="grade-value-input" placeholder="Nota" required step="0.01"><select id="grade-category-select"><option value="daily">Nota Diaria</option><option value="appreciation">Apreciación</option><option value="final_exam">Examen Final</option></select><button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button></form></div></div>
+                <div id="task-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Tarea Académica</h3><form id="task-form"><input type="hidden" id="task-id"><input type="text" id="task-title-input" placeholder="Título de la tarea" required><textarea id="task-desc-input" placeholder="Descripción"></textarea><input type="date" id="task-due-date-input" required><button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button></form></div></div>
+            </div>
+
+            <!-- Página: Estudio de Inglés -->
+            <div id="page-ingles" class="page-wrapper" style="display: none;">
+                <h1>Estudio de Inglés</h1>
+                
+                <div id="ingles-container">
+                    <div class="toolbar">
+                        <input type="search" id="ingles-search-input" placeholder="Filtrar en esta sección..." class="local-search-input">
+                    </div>
+                    <!-- Pestañas -->
+                    <div class="tab-switcher">
+                        <button class="tab-btn active" data-tab="vocab">Vocabulario</button>
+                        <button class="tab-btn" data-tab="grammar">Gramática</button>
+                        <button class="tab-btn" data-tab="resources">Recursos</button>
+                    </div>
+                
+                    <!-- Contenido de Pestañas -->
+                    <div id="vocab-tab-content" class="tab-content active">
+                        <h3>Mi Vocabulario</h3>
+                        <div class="toolbar">
+                            <button id="add-vocab-btn" class="control-btn"><span class="material-icons-outlined">add</span> Añadir Palabra</button>
+                            <button id="start-flashcards-btn" class="control-btn"><span class="material-icons-outlined">style</span> Iniciar Flashcards</button>
+                        </div>
+                        <div id="flashcard-view" style="display: none;">
+                            <div class="flashcard-container">
+                                <div class="flashcard">
+                                    <div class="flashcard-front"></div>
+                                    <div class="flashcard-back"></div>
+                                </div>
+                            </div>
+                            <div class="flashcard-nav"><button id="prev-flashcard-btn" class="control-btn">Anterior</button><button id="next-flashcard-btn" class="control-btn">Siguiente</button></div>
+                        </div>
+                        <div id="vocab-list"></div>
+                    </div>
+                
+                    <div id="grammar-tab-content" class="tab-content">
+                        <h3>Mis Apuntes de Gramática</h3>
+                        <button id="add-grammar-btn" class="control-btn"><span class="material-icons-outlined">add</span> Añadir Regla</button>
+                        <div id="grammar-list"></div>
+                    </div>
+                
+                    <div id="resources-tab-content" class="tab-content">
+                        <h3>Mis Recursos</h3>
+                        <button id="add-resource-btn" class="control-btn"><span class="material-icons-outlined">add</span> Subir Recurso</button>
+                        <div id="resource-gallery"></div>
+                    </div>
+                </div>
+
+                <!-- Modales para Inglés -->
+                <div id="vocab-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Nueva Palabra</h3><form id="vocab-form"><input type="hidden" name="id"><input type="text" placeholder="Palabra o Frase" id="vocab-term" required><input type="text" placeholder="Traducción" id="vocab-translation" required><textarea placeholder="Frase de ejemplo" id="vocab-example"></textarea><button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button></form></div></div>
+                <div id="grammar-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Nueva Regla Gramatical</h3><form id="grammar-form"><input type="hidden" name="id"><input type="text" placeholder="Título de la Regla" id="grammar-title" required><textarea placeholder="Descripción y ejemplos" id="grammar-description" required></textarea><button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button></form></div></div>
+                <div id="resource-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Subir Recurso</h3><form id="resource-form"><input type="hidden" name="id"><input type="text" placeholder="Nombre del Recurso" id="resource-name" required><input type="file" id="resource-file" required><button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button></form></div></div>
+            </div>
+
+            <!-- Página: Dibujo -->
+            <div id="page-dibujo" class="page-wrapper" style="display: none;">
+                <h1>Bitácora de Dibujo</h1>
+                <div id="drawing-log-container">
+                    <div class="toolbar">
+                        <button id="add-drawing-btn" class="control-btn"><span class="material-icons-outlined">add</span> Nueva Entrada</button>
+                    </div>
+                    <div id="drawing-gallery">
+                        <!-- Las tarjetas de dibujo se renderizarán aquí -->
+                    </div>
+                </div>
+
+                <!-- Modal para Dibujo -->
+                <div id="drawing-modal" class="modal">
+                    <div class="modal-content">
+                        <span class="close-btn">&times;</span>
+                        <h3>Nueva Entrada de Dibujo</h3><form id="drawing-form"><input type="hidden" id="drawing-id"><div class="form-group"><label for="drawing-desc">Descripción:</label><textarea id="drawing-desc" required></textarea></div><div class="form-group"><label for="drawing-image">Adjuntar Imagen:</label><input type="file" id="drawing-image" accept="image/*" required><img id="drawing-preview" src="" alt="Previsualización" style="max-width: 100%; max-height: 200px; margin-top: 10px; display: none;"></div><button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button></form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Página: Ejercicio Físico -->
+            <div id="page-ejercicio" class="page-wrapper" style="display: none;">
+                <h1>Ejercicio Físico</h1>
+
+                <div class="exercise-container">
+                    <!-- Toolbar para cambiar de vista -->
+                    <div class="view-switcher">
+                        <button id="show-session-btn" class="active">Sesión Actual</button>
+                        <button id="show-routines-btn">Gestionar Rutinas</button>
+                        <button id="show-progress-btn">Progreso</button>
+                        <button id="show-logbook-btn">Bitácora</button>
+                    </div>
+
+                    <!-- Vista 1: Sesión Activa (Visible por defecto) -->
+                    <div id="active-session-view" class="view-content">
+                        <div class="session-controls">
+                            <div class="timer-container">
+                                <span id="main-timer" class="timer-display">00:00:00</span>
+                                <div class="timer-buttons">
+                                    <button id="start-pause-btn" class="control-btn"><span class="material-icons-outlined">play_arrow</span><span id="start-pause-text">Iniciar</span></button>
+                                    <button id="end-session-btn" class="control-btn" disabled><span class="material-icons-outlined">stop</span>Terminar</button>
+                                    <button id="reset-session-btn" class="control-btn" disabled><span class="material-icons-outlined">refresh</span>Reiniciar</button>
+                                </div>
+                            </div>
+                            <div class="routine-selector-container">
+                                <h2 id="current-routine-name">Selecciona una rutina para empezar</h2>
+                                <select id="routine-selector"></select>
+                            </div>
+                        </div>
+
+                        <div id="routine-display">
+                            <!-- Los ejercicios de la rutina activa se cargarán aquí -->
+                        </div>
+                        
+                        <div id="rest-timer-wrapper" class="rest-timer-wrapper" style="display: none;">
+                            <div class="rest-timer-content">
+                                <h3>Descanso</h3>
+                                <span id="rest-timer" class="timer-display">01:30</span>
+                                <button id="skip-rest-btn" class="control-btn">Saltar</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vista 2: Gestión de Rutinas (Oculta por defecto) -->
+                    <div id="routine-management-view" class="view-content" style="display: none;">
+                        <h2>Mis Rutinas</h2>
+                        <button id="create-routine-btn" class="control-btn"><span class="material-icons-outlined">add</span>Crear Nueva Rutina</button>
+                        <div id="routines-list">
+                            <!-- La lista de rutinas se cargará aquí -->
+                        </div>
+                    </div>
+
+                    <!-- Vista 4: Progreso (Oculta por defecto) -->
+                    <div id="progress-view" class="view-content" style="display: none;">
+                        <h2>Progreso por Ejercicio</h2>
+                        <div class="toolbar">
+                            <label for="progress-exercise-selector">Selecciona un ejercicio:</label>
+                            <select id="progress-exercise-selector"></select>
+                        </div>
+                        <canvas id="progress-chart"></canvas>
+                    </div>
+
+                    <!-- Vista 3: Bitácora (Oculta por defecto) -->
+                    <div id="logbook-view" class="view-content" style="display: none;">
+                        <h2>Bitácora de Entrenamiento</h2>
+                        <div id="logbook-entries">
+                            <!-- Las entradas de la bitácora se cargarán aquí -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal para crear/editar rutinas -->
+                <div id="routine-modal" class="modal" style="display: none;"><div class="modal-content"><span class="close-btn">&times;</span><h3 id="modal-title">Crear Rutina</h3><form id="routine-form"><input type="hidden" id="routine-id"><div class="form-group"><label for="routine-name">Nombre de la Rutina:</label><input type="text" id="routine-name" required></div><div id="exercises-container"><!-- Los grupos musculares y ejercicios se añadirán aquí --></div><button type="button" id="add-exercise-group-btn" class="control-btn"><span class="material-icons">add</span>Añadir Grupo Muscular</button><button type="submit" class="control-btn">Guardar Rutina</button></form></div></div>
+            </div> 
+
+            <!-- Página: Alimentación -->
+            <div id="page-alimentacion" class="page-wrapper" style="display: none;">
+                <h1>Bitácora de Alimentación</h1>
+                
+                <div id="food-log-container">
+                    <div class="toolbar">
+                        <button id="add-food-entry-btn" class="control-btn"><span class="material-icons-outlined">add</span> Nuevo Registro</button>
+                        <div class="filters">
+                            <input type="date" id="food-date-filter">
+                            <button id="clear-food-filter-btn" class="control-btn">Limpiar Filtro</button>
+                        </div>
+                    </div>
+                    <div id="food-log-grid"></div>
+                </div>
+                
+                <!-- Modal para nuevo registro de alimentación -->
+                <div id="food-entry-modal" class="modal">
+                    <div class="modal-content">
+                        <span class="close-btn">&times;</span>
+                        <h3>Nuevo Registro de Comida</h3>
+                        <form id="food-entry-form">
+                            <input type="hidden" id="food-entry-id">
+                            <div class="form-group"><label for="food-entry-date">Fecha:</label><input type="date" id="food-entry-date" required></div>
+                            <div class="form-group"><label for="food-entry-note">Nota:</label><textarea id="food-entry-note" placeholder="¿Qué comiste? ¿Cómo te sentiste?" required></textarea></div><div class="form-group"><label for="food-entry-image">Adjuntar Imagen:</label><input type="file" id="food-entry-image" accept="image/*"><img id="image-preview" src="" alt="Previsualización" style="max-width: 100%; max-height: 200px; margin-top: 10px; display: none;"></div><button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Página: Lista de Tareas -->
+            <div id="page-tareas" class="page-wrapper" style="display: none;">
+                <h1>Lista de Tareas Global</h1>
+                <div id="global-tasks-container">
+                    <div class="toolbar">
+                        <button id="add-global-task-btn" class="control-btn"><span class="material-icons-outlined">add</span> Nueva Tarea</button>
+                    </div>
+                    <div id="global-tasks-list">
+                        <!-- La lista de tareas se renderizará aquí -->
+                    </div>
+                </div>
+                <!-- Modal para Tareas Globales -->
+                <div id="global-task-modal" class="modal">
+                    <div class="modal-content">
+                        <span class="close-btn">&times;</span>
+                        <h3>Tarea Global</h3><form id="global-task-form"><input type="hidden" id="global-task-id"><input type="text" id="global-task-title" placeholder="Título de la tarea" required><textarea id="global-task-desc" placeholder="Descripción"></textarea><input type="date" id="global-task-due-date" required><button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button></form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Página: Ajustes -->
+            <div id="page-ajustes" class="page-wrapper" style="display: none;">
+                <div class="settings-container">
+
+                    <!-- Card para Tema -->
+                    <div class="setting-card">
+                        <h2>Tema</h2>
+                        <div class="theme-switcher">
+                            <label for="theme-switch">Modo Oscuro</label>
+                            <label class="switch">
+                                <input type="checkbox" id="theme-switch">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                
+                    <!-- Card para Paleta de Colores -->
+                    <div class="setting-card">
+                        <h2>Color de Acento</h2>
+                        <p>Selecciona el color para los elementos activos y destacados.</p>
+                        <div class="color-palette" id="accent-color-palette"><div class="color-box" style="background-color: rgb(52, 152, 219);" title="Azul claro"></div><div class="color-box" style="background-color: rgb(155, 89, 182);" title="Morado"></div><div class="color-box" style="background-color: rgb(233, 30, 99);" title="Rosado"></div><div class="color-box" style="background-color: rgb(231, 76, 60);" title="Rojo"></div><div class="color-box" style="background-color: rgb(46, 204, 113);" title="Verde"></div><div class="color-box" style="background-color: rgb(241, 196, 15);" title="Amarillo"></div><div class="color-box" style="background-color: rgb(0, 0, 0);" title="Negro"></div><div class="color-box" style="background-color: rgb(255, 255, 255);" title="Blanco"></div></div>
+                    </div>
+                
+                    <!-- Card para Gestión de Datos -->
+                    <div class="setting-card">
+                        <h2>Gestión de Datos</h2>
+                        <p>Guarda una copia de seguridad de todos tus datos o restaura desde un archivo.</p>
+                        <div class="data-management-actions">
+                            <button id="export-data-btn" class="control-btn"><span class="material-icons-outlined">file_download</span> Exportar Datos</button>
+                            <label for="import-data-input" class="control-btn"><span class="material-icons-outlined">file_upload</span> Importar Datos</label>
+                            <input type="file" id="import-data-input" accept=".zip" style="display: none;">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

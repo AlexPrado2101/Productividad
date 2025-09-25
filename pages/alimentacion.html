@@ -1,0 +1,37 @@
+<h1>Bitácora de Alimentación</h1>
+
+<div id="food-log-container">
+    <div class="toolbar">
+        <button id="add-food-entry-btn" class="control-btn"><span class="material-icons">add</span> Nuevo Registro</button>
+        <div class="filters">
+            <input type="date" id="food-date-filter">
+            <button id="clear-food-filter-btn">Limpiar Filtro</button>
+        </div>
+    </div>
+    <div id="food-log-grid"></div>
+</div>
+
+<!-- Modal para nuevo registro de alimentación -->
+<div id="food-entry-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h3>Nuevo Registro de Comida</h3>
+        <form id="food-entry-form">
+            <input type="hidden" id="food-entry-id">
+            <div class="form-group">
+                <label for="food-entry-date">Fecha:</label>
+                <input type="date" id="food-entry-date" required>
+            </div>
+            <div class="form-group">
+                <label for="food-entry-note">Nota:</label>
+                <textarea id="food-entry-note" placeholder="¿Qué comiste? ¿Cómo te sentiste?" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="food-entry-image">Adjuntar Imagen:</label>
+                <input type="file" id="food-entry-image" accept="image/*">
+                <img id="image-preview" src="" alt="Previsualización" style="max-width: 100%; max-height: 200px; margin-top: 10px; display: none;">
+            </div>
+            <button type="submit" class="control-btn">Guardar</button>
+        </form>
+    </div>
+</div>

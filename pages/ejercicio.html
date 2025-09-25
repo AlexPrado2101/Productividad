@@ -1,0 +1,79 @@
+<h1>Ejercicio Físico</h1>
+
+<div class="exercise-container">
+    <!-- Toolbar para cambiar de vista -->
+    <div class="view-switcher">
+        <button id="show-session-btn" class="active">Sesión Actual</button>
+        <button id="show-routines-btn">Gestionar Rutinas</button>
+        <button id="show-logbook-btn">Bitácora</button>
+    </div>
+
+    <!-- Vista 1: Sesión Activa (Visible por defecto) -->
+    <div id="active-session-view" class="view-content">
+        <div class="session-controls">
+            <div class="timer-container">
+                <span id="main-timer" class="timer-display">00:00:00</span>
+                <div class="timer-buttons">
+                    <button id="start-pause-btn" class="control-btn"><span class="material-icons">play_arrow</span><span id="start-pause-text">Iniciar</span></button>
+                    <button id="end-session-btn" class="control-btn" disabled><span class="material-icons">stop</span>Terminar</button>
+                    <button id="reset-session-btn" class="control-btn" disabled><span class="material-icons">refresh</span>Reiniciar</button>
+                </div>
+            </div>
+            <div class="routine-selector-container">
+                 <h2 id="current-routine-name">Selecciona una rutina para empezar</h2>
+                 <select id="routine-selector"></select>
+            </div>
+        </div>
+
+        <div id="routine-display">
+            <!-- Los ejercicios de la rutina activa se cargarán aquí -->
+        </div>
+        
+        <div id="rest-timer-wrapper" class="rest-timer-wrapper" style="display: none;">
+            <div class="rest-timer-content">
+                <h3>Descanso</h3>
+                <span id="rest-timer" class="timer-display">01:30</span>
+                <button id="skip-rest-btn" class="control-btn">Saltar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vista 2: Gestión de Rutinas (Oculta por defecto) -->
+    <div id="routine-management-view" class="view-content" style="display: none;">
+        <h2>Mis Rutinas</h2>
+        <button id="create-routine-btn" class="control-btn"><span class="material-icons">add</span>Crear Nueva Rutina</button>
+        <div id="routines-list">
+            <!-- La lista de rutinas se cargará aquí -->
+        </div>
+    </div>
+
+    <!-- Vista 3: Bitácora (Oculta por defecto) -->
+    <div id="logbook-view" class="view-content" style="display: none;">
+        <h2>Bitácora de Entrenamiento</h2>
+        <div id="logbook-entries">
+            <!-- Las entradas de la bitácora se cargarán aquí -->
+        </div>
+    </div>
+</div>
+
+<!-- Modal para crear/editar rutinas -->
+<div id="routine-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h3 id="modal-title">Crear Rutina</h3>
+        <form id="routine-form">
+            <input type="hidden" id="routine-id">
+            <div class="form-group">
+                <label for="routine-name">Nombre de la Rutina:</label>
+                <input type="text" id="routine-name" required>
+            </div>
+            
+            <div id="exercises-container">
+                <!-- Los grupos musculares y ejercicios se añadirán aquí -->
+            </div>
+            
+            <button type="button" id="add-exercise-group-btn" class="control-btn"><span class="material-icons">add</span>Añadir Grupo Muscular</button>
+            <button type="submit" class="control-btn">Guardar Rutina</button>
+        </form>
+    </div>
+</div>

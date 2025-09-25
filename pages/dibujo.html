@@ -1,0 +1,29 @@
+<h1>Bitácora de Dibujo</h1>
+
+<div id="drawing-log-container">
+    <div class="toolbar">
+        <button id="add-drawing-btn" class="control-btn"><span class="material-icons">add</span> Añadir Dibujo</button>
+    </div>
+    <div id="drawing-log-grid"></div>
+</div>
+
+<!-- Modal para nuevo dibujo -->
+<div id="drawing-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h3>Nuevo Dibujo</h3>
+        <form id="drawing-form">
+            <input type="hidden" id="drawing-id">
+            <div class="form-group">
+                <label for="drawing-desc">Descripción:</label>
+                <textarea id="drawing-desc" placeholder="¿En qué te inspiraste?" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="drawing-image">Adjuntar Dibujo:</label>
+                <input type="file" id="drawing-image" accept="image/*" required>
+                <img id="drawing-preview" src="" alt="Previsualización" style="max-width: 100%; max-height: 200px; margin-top: 10px; display: none;">
+            </div>
+            <button type="submit" class="control-btn">Guardar</button>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,54 @@
+<h1>Notas Académicas</h1>
+
+<div id="notes-container">
+    <!-- Vista Principal: Lista de Materias -->
+    <div id="subjects-list-view">
+        <h2>Mis Materias</h2>
+        <button id="add-subject-btn" class="control-btn"><span class="material-icons">add</span> Añadir Materia</button>
+        <div id="subjects-list"></div>
+    </div>
+
+    <!-- Vista de Detalle: Materia Individual (oculta por defecto) -->
+    <div id="subject-detail-view" style="display: none;">
+        <button id="back-to-subjects-btn" class="control-btn"><span class="material-icons">arrow_back</span> Volver</button>
+        <h2 id="subject-title"></h2>
+
+        <!-- Pestañas -->
+        <div class="tab-switcher">
+            <button class="tab-btn active" data-tab="grades">Calificaciones</button>
+            <button class="tab-btn" data-tab="tasks">Tareas</button>
+        </div>
+
+        <!-- Contenido de Pestañas -->
+        <div id="grades-tab-content" class="tab-content active">
+            <h3>Calificaciones</h3>
+            <div class="percentages-container">
+                <h4>Ponderación de la Materia (%)</h4>
+                <div class="percentage-item"><span>Notas Diarias:</span> <input type="number" class="percentage-input" data-category="daily" min="0" max="100" value="30">%</div>
+                <div class="percentage-item"><span>Apreciación:</span> <input type="number" class="percentage-input" data-category="appreciation" min="0" max="100" value="20">%</div>
+                <div class="percentage-item"><span>Examen Final:</span> <input type="number" class="percentage-input" data-category="final_exam" min="0" max="100" value="50">%</div>
+                <div id="percentage-total-error" style="color: red; display: none;">El total debe ser 100%.</div>
+            </div>
+            <div class="grades-summary">
+                <h4>Promedios</h4>
+                <p>Notas Diarias: <span id="avg-daily">N/A</span></p>
+                <p>Apreciación: <span id="avg-appreciation">N/A</span></p>
+                <p>Examen Final: <span id="avg-final_exam">N/A</span></p>
+                <p><strong>Promedio Final: <span id="avg-final">N/A</span></strong></p>
+            </div>
+            <button id="add-grade-btn" class="control-btn"><span class="material-icons">add</span> Añadir Nota</button>
+            <div id="grades-list"></div>
+        </div>
+
+        <div id="tasks-tab-content" class="tab-content">
+            <h3>Tareas</h3>
+            <button id="add-task-btn" class="control-btn"><span class="material-icons">add</span> Añadir Tarea</button>
+            <div id="tasks-list"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modales -->
+<div id="subject-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Materia</h3><form id="subject-form"><input type="hidden" id="subject-id"><input type="text" id="subject-name-input" placeholder="Nombre de la materia" required><button type="submit">Guardar</button></form></div></div>
+<div id="grade-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Nota</h3><form id="grade-form"><input type="hidden" id="grade-id"><input type="text" id="grade-title-input" placeholder="Título (ej. Parcial 1)" required><input type="number" id="grade-value-input" placeholder="Nota" required><select id="grade-category-select"><option value="daily">Nota Diaria</option><option value="appreciation">Apreciación</option><option value="final_exam">Examen Final</option></select><button type="submit">Guardar</button></form></div></div>
+<div id="task-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Tarea</h3><form id="task-form"><input type="hidden" id="task-id"><input type="text" id="task-title-input" placeholder="Título de la tarea" required><textarea id="task-desc-input" placeholder="Descripción"></textarea><input type="date" id="task-due-date-input" required><button type="submit">Guardar</button></form></div></div>

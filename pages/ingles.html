@@ -1,0 +1,34 @@
+<h1>Estudio de Inglés</h1>
+
+<div id="ingles-container">
+    <!-- Pestañas -->
+    <div class="tab-switcher">
+        <button class="tab-btn active" data-tab="vocab">Vocabulario</button>
+        <button class="tab-btn" data-tab="grammar">Gramática</button>
+        <button class="tab-btn" data-tab="resources">Recursos</button>
+    </div>
+
+    <!-- Contenido de Pestañas -->
+    <div id="vocab-tab-content" class="tab-content active">
+        <h3>Mi Vocabulario</h3>
+        <button id="add-vocab-btn" class="control-btn"><span class="material-icons">add</span> Añadir Palabra</button>
+        <div id="vocab-list"></div>
+    </div>
+
+    <div id="grammar-tab-content" class="tab-content">
+        <h3>Mis Apuntes de Gramática</h3>
+        <button id="add-grammar-btn" class="control-btn"><span class="material-icons">add</span> Añadir Regla</button>
+        <div id="grammar-list"></div>
+    </div>
+
+    <div id="resources-tab-content" class="tab-content">
+        <h3>Mis Recursos</h3>
+        <button id="add-resource-btn" class="control-btn"><span class="material-icons">add</span> Subir Recurso</button>
+        <div id="resource-gallery"></div>
+    </div>
+</div>
+
+<!-- Modales -->
+<div id="vocab-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Nueva Palabra</h3><form id="vocab-form"><input type="text" placeholder="Palabra o Frase" id="vocab-term" required><input type="text" placeholder="Traducción" id="vocab-translation" required><textarea placeholder="Frase de ejemplo" id="vocab-example"></textarea><button type="submit">Guardar</button></form></div></div>
+<div id="grammar-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Nueva Regla Gramatical</h3><form id="grammar-form"><input type="text" placeholder="Título de la Regla" id="grammar-title" required><textarea placeholder="Descripción y ejemplos" id="grammar-description" required></textarea><button type="submit">Guardar</button></form></div></div>
+<div id="resource-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Subir Recurso</h3><form id="resource-form"><input type="text" placeholder="Nombre del Recurso" id="resource-name" required><input type="file" id="resource-file" required><button type="submit">Guardar</button></form></div></div>
