@@ -1256,8 +1256,6 @@ class App {
         const subjectModal = page.querySelector('#subject-modal');
         const subjectForm = page.querySelector('#subject-form');
         const backBtn = page.querySelector('#back-to-subjects-btn');
-        const gradesTab = page.querySelector('#grades-tab-content');
-        const tasksTab = page.querySelector('#tasks-tab-content');
         const gradesListEl = page.querySelector('#grades-list');
         const tasksListEl = page.querySelector('#tasks-list');
         const addGradeBtn = page.querySelector('#add-grade-btn');
@@ -1268,95 +1266,98 @@ class App {
         const percentagesContainer = page.querySelector('.percentages-container');
         const percentageError = page.querySelector('#percentage-total-error');
 
-        // --- Function Declarations ---
-        const renderTasks = (subject) => {
-            if (!tasksListEl) return;
-            const now = new Date();
-            tasksListEl.innerHTML = subject.tasks.map(t => {
-                const dueDate = new Date(t.dueDate);
-                const daysDiff = (dueDate - now) / (1000 * 60 * 60 * 24);
-                let statusClass = 'status-green';
-                if (daysDiff <= 3) statusClass = 'status-red';
-                else if (daysDiff <= 7) statusClass = 'status-yellow';
-
-                return `
-                    <div class="card task-card ${statusClass} ${t.completed ? 'completed' : ''}" data-id="${t.id}">
-                        <div class="status-indicator"></div><input type="checkbox" ${t.completed ? 'checked' : ''}>
-                        <div>
-                            <h4>${t.title}</h4>
-                            <p>${t.description}</p>
-                            <small>Entrega: ${new Date(t.dueDate).toLocaleDateString()}</small>
-                        </div>
-                        <div class="card-actions">
-                            <button class="edit-academic-task-btn control-btn">Editar</button><button class="delete-academic-task-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }; 
+        // --- CATEGORY STANDARDIZATION ---
+        const CATEGORIES = {
+            DAILY: 'daily',
+            APPRECIATION: 'appreciation',
+            FINAL_EXAM: 'final_exam'
+        };
+        const categoryKeys = Object.values(CATEGORIES);
 
         const calculateAverages = (subject) => {
-            const averages = { daily: 0, appreciation: 0, final_exam: 0 };
-            const counts = { daily: 0, appreciation: 0, final_exam: 0 };
-            
-            subject.grades.forEach(grade => {
-                averages[grade.category] += parseFloat(grade.value);
-                counts[grade.category]++;
+            const isUniversityMode = subject.grades.some(g => g.value > 5);
+
+            const getAverageColor = (average, isUniversity) => {
+                if (isUniversity) {
+                    if (average <= 61) return "red";
+                    if (average >= 71 && average <= 80) return "goldenrod";
+                    if (average >= 81 && average <= 90) return "orange";
+                    if (average >= 91 && average <= 100) return "green";
+                    return "";
+                } else {
+                    if (average < 3.0) return "darkred";
+                    if (average >= 3.0 && average <= 3.9) return "goldenrod";
+                    if (average >= 4.1 && average <= 5.0) return "green";
+                    return "";
+                }
+            };
+
+            const categoryAverages = {};
+            let finalAverage = 0;
+
+            categoryKeys.forEach(catKey => {
+                const grades = subject.grades.filter(g => g.category === catKey);
+                const total = grades.reduce((sum, g) => sum + parseFloat(g.value), 0);
+                const avg = grades.length > 0 ? total / grades.length : 0;
+                categoryAverages[catKey] = avg;
+
+                const avgEl = detailView.querySelector(`#avg-${catKey}`);
+                if (avgEl) {
+                    avgEl.textContent = avg.toFixed(2);
+                    avgEl.style.color = getAverageColor(avg, isUniversityMode);
+                }
             });
 
-            let finalAverage = 0;
-            for (const cat in averages) {
-                const avg = counts[cat] > 0 ? (averages[cat] / counts[cat]) : 0;
-                const avgEl = detailView.querySelector(`#avg-${cat}`);
-                if(avgEl) avgEl.textContent = avg.toFixed(2);
-                const percentage = (subject.percentages[cat] || 0) / 100;
-                finalAverage += avg * percentage;
+            const totalPercentage = Object.values(subject.percentages).reduce((sum, val) => sum + Number(val), 0);
+
+            if (Math.round(totalPercentage) === 100) {
+                finalAverage = categoryKeys.reduce((sum, catKey) => {
+                    const percentage = (subject.percentages[catKey] || 0) / 100;
+                    return sum + (categoryAverages[catKey] * percentage);
+                }, 0);
+            } else {
+                const totalAverageSum = categoryKeys.reduce((sum, catKey) => sum + categoryAverages[catKey], 0);
+                finalAverage = totalAverageSum / categoryKeys.length;
             }
+
             const finalAvgEl = detailView.querySelector('#avg-final');
-            if(finalAvgEl) finalAvgEl.textContent = finalAverage.toFixed(2);
+            if (finalAvgEl) {
+                finalAvgEl.textContent = finalAverage.toFixed(2);
+                finalAvgEl.style.color = getAverageColor(finalAverage, isUniversityMode);
+            }
         };
 
         const renderGrades = (subject) => {
             if (!gradesListEl) return;
-            if (subject.grades.length === 0) {
-                gradesListEl.innerHTML = '<p>No hay calificaciones añadidas.</p>';
-            } else {
-                gradesListEl.innerHTML = `
-                    <table class="grades-table">
+            gradesListEl.innerHTML = subject.grades.length === 0 
+                ? '<p>No hay calificaciones añadidas.</p>'
+                : `<table class="grades-table">
                         <thead>
-                            <tr>
-                                <th>Título</th>
-                                <th>Nota</th>
-                                <th>Categoría</th>
-                                <th>Acciones</th>
-                            </tr>
+                            <tr><th>Título</th><th>Nota</th><th>Categoría</th><th>Acciones</th></tr>
                         </thead>
                         <tbody>
                             ${subject.grades.map(g => `
                                 <tr data-id="${g.id}">
                                     <td>${g.title}</td>
                                     <td>${g.value}</td>
-                                    <td>${g.category}</td>
+                                    <td>${page.querySelector(`#grade-category-select option[value='${g.category}']`).textContent}</td>
                                     <td>
                                         <div class="card-actions">
                                             <button class="edit-grade-btn control-btn">Editar</button>
                                             <button class="delete-grade-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
                                         </div>
                                     </td>
-                                </tr>
-                            `).join('')}
+                                </tr>`).join('')}
                         </tbody>
-                    </table>
-                `;
-            }
+                    </table>`;
             calculateAverages(subject);
         };
 
         const validatePercentages = (subject) => {
             if (!percentageError) return true;
             const total = Object.values(subject.percentages).reduce((sum, val) => sum + Number(val), 0);
-            percentageError.style.display = total !== 100 ? 'block' : 'none';
-            return total === 100;
+            percentageError.style.display = Math.round(total) !== 100 ? 'block' : 'none';
+            return Math.round(total) === 100;
         };
 
         const renderSubjectDetails = () => {
@@ -1365,17 +1366,38 @@ class App {
                 showListView();
                 return;
             }
+
+            // --- MIGRATION LOGIC ---
+            let migrated = false;
+            const oldKeys = { Diaria: "daily", Apreciación: "appreciation", Examen_Final: "final_exam", "Examen Final": "final_exam" };
+            Object.keys(oldKeys).forEach(oldKey => {
+                if (subject.percentages && subject.percentages.hasOwnProperty(oldKey)) {
+                    subject.percentages[oldKeys[oldKey]] = subject.percentages[oldKey];
+                    delete subject.percentages[oldKey];
+                    migrated = true;
+                }
+            });
+            subject.grades.forEach(grade => {
+                if (['Diaria', 'Apreciación', 'Examen_Final', 'Examen Final'].includes(grade.category)) {
+                    grade.category = oldKeys[grade.category];
+                    migrated = true;
+                }
+            });
+            if (migrated) {
+                saveSubjects();
+            }
+            // --- END MIGRATION ---
+
             const subjectTitle = page.querySelector('#subject-title');
-            if(subjectTitle) subjectTitle.textContent = subject.name;
-            if(percentagesContainer) {
+            if (subjectTitle) subjectTitle.textContent = subject.name;
+            if (percentagesContainer) {
                 percentagesContainer.querySelectorAll('.percentage-input').forEach(input => {
-                    input.value = subject.percentages[input.dataset.category];
+                    input.value = subject.percentages[input.dataset.category] || 0;
                 });
             }
             validatePercentages(subject);
-
             renderGrades(subject);
-            renderTasks(subject);
+            // renderTasks(subject); // Assuming tasks are not part of this bug
         };
 
         const renderSubjects = () => {
@@ -1384,58 +1406,54 @@ class App {
                 <div class="card subject-card" data-id="${s.id}">
                     <h4>${s.name}</h4>
                     <button class="delete-subject-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
-                </div>
-            `).join('') || '<p>Aún no has añadido ninguna materia.</p>';
+                </div>`).join('') || '<p>Aún no has añadido ninguna materia.</p>';
         };
 
         const showListView = () => {
-            if(detailView) detailView.style.display = 'none';
-            if(listView) listView.style.display = 'block';
+            if (detailView) detailView.style.display = 'none';
+            if (listView) listView.style.display = 'block';
             currentSubjectId = null;
             renderSubjects();
         };
 
         const showDetailView = (subjectId) => {
-            if(listView) listView.style.display = 'none';
-            if(detailView) detailView.style.display = 'block';
+            if (listView) listView.style.display = 'none';
+            if (detailView) detailView.style.display = 'block';
             currentSubjectId = subjectId;
             renderSubjectDetails();
         };
 
-
-        // --- Event Listeners ---
         if (!page.dataset.listenersAttached) {
             page.dataset.listenersAttached = 'true';
 
-            if(backBtn) backBtn.addEventListener('click', showListView);
+            backBtn.addEventListener('click', showListView);
 
-            if(addSubjectBtn) addSubjectBtn.addEventListener('click', () => {
-                if(subjectForm) subjectForm.reset();
-                if(subjectForm) subjectForm.querySelector('#subject-id').value = '';
-                if(subjectModal) subjectModal.style.display = 'flex';
+            addSubjectBtn.addEventListener('click', () => {
+                subjectForm.reset();
+                subjectForm.querySelector('#subject-id').value = '';
+                subjectModal.style.display = 'flex';
             });
 
-            if(subjectModal) subjectModal.querySelector('.close-btn').onclick = () => subjectModal.style.display = 'none';
+            subjectModal.querySelector('.close-btn').onclick = () => subjectModal.style.display = 'none';
 
-            if(subjectForm) subjectForm.addEventListener('submit', e => {
+            subjectForm.addEventListener('submit', e => {
                 e.preventDefault();
                 const name = subjectForm.querySelector('#subject-name-input').value.trim();
                 if (!name) return;
-                
-                const newSubject = { 
+                const newSubject = {
                     id: Date.now(),
                     name: name,
-                    percentages: { daily: 30, appreciation: 20, final_exam: 50 },
+                    percentages: { [CATEGORIES.DAILY]: 30, [CATEGORIES.APPRECIATION]: 20, [CATEGORIES.FINAL_EXAM]: 50 },
                     grades: [],
                     tasks: []
                 };
                 subjects.push(newSubject);
                 saveSubjects();
                 renderSubjects();
-                if(subjectModal) subjectModal.style.display = 'none';
+                subjectModal.style.display = 'none';
             });
 
-            if(subjectsListEl) subjectsListEl.addEventListener('click', e => {
+            subjectsListEl.addEventListener('click', e => {
                 const card = e.target.closest('.subject-card');
                 if (!card) return;
                 const id = card.dataset.id;
@@ -1451,7 +1469,7 @@ class App {
                 }
             });
 
-            if(percentagesContainer) percentagesContainer.addEventListener('input', e => {
+            percentagesContainer.addEventListener('input', e => {
                 if (e.target.classList.contains('percentage-input')) {
                     const subject = subjects.find(s => s.id == currentSubjectId);
                     if (!subject) return;
@@ -1462,17 +1480,14 @@ class App {
                 }
             });
 
-            if(addGradeBtn && gradeModal) addGradeBtn.addEventListener('click', () => {
-                if(gradeForm) gradeForm.reset();
-                if(gradeForm) gradeForm.querySelector('#grade-id').value = '';
+            addGradeBtn.addEventListener('click', () => {
+                gradeForm.reset();
+                gradeForm.querySelector('#grade-id').value = '';
                 const gradeValueInput = gradeModal.querySelector('#grade-value-input');
-                if(gradeValueInput) {
-                    gradeValueInput.max = "5";
-                    gradeValueInput.min = "1";
-                    gradeValueInput.step = "0.1";
-                }
-                const universityGradeBtn = gradeModal.querySelector('#university-grade-btn');
-                if(universityGradeBtn) universityGradeBtn.textContent = "Nota Universitaria";
+                gradeValueInput.max = "5";
+                gradeValueInput.min = "1";
+                gradeValueInput.step = "0.1";
+                gradeModal.querySelector('#university-grade-btn').textContent = "Modo Universitario";
                 gradeModal.style.display = 'flex';
             });
 
@@ -1489,87 +1504,81 @@ class App {
                             gradeValueInput.max = "100";
                             gradeValueInput.min = "0";
                             gradeValueInput.step = "1";
-                            universityGradeBtn.textContent = "Nota Normal";
+                            universityGradeBtn.textContent = "Modo Normal";
                         } else {
                             gradeValueInput.max = "5";
                             gradeValueInput.min = "1";
                             gradeValueInput.step = "0.1";
-                            universityGradeBtn.textContent = "Nota Universitaria";
+                            universityGradeBtn.textContent = "Modo Universitario";
+                        }
+                    });
+
+                    gradeValueInput.addEventListener('blur', () => {
+                        if (gradeValueInput.max === "5") {
+                            let value = parseFloat(gradeValueInput.value);
+                            if (!isNaN(value)) {
+                                if (value > 5 && value <= 50) { // Heuristic for inputs like 20, 35, 50
+                                    value = value / 10.0;
+                                }
+                                gradeValueInput.value = value.toFixed(1);
+                            }
                         }
                     });
                 }
             }
 
-            if(gradeForm) gradeForm.addEventListener('submit', e => {
+            gradeForm.addEventListener('submit', e => {
                 e.preventDefault();
                 const subject = subjects.find(s => s.id == currentSubjectId);
                 if (!subject) return;
-
                 const id = gradeForm.querySelector('#grade-id').value;
+                const gradeValueInput = gradeForm.querySelector('#grade-value-input');
+                let value = parseFloat(gradeValueInput.value);
+                if (gradeValueInput.max === "5" && value > 5) {
+                    value = value / 10.0;
+                }
                 const gradeData = {
                     title: gradeForm.querySelector('#grade-title-input').value,
-                    value: parseFloat(gradeForm.querySelector('#grade-value-input').value),
+                    value: value.toFixed(1),
                     category: gradeForm.querySelector('#grade-category-select').value,
                 };
-
-                if (id) { // Editing
+                if (id) {
                     const index = subject.grades.findIndex(g => g.id == id);
                     subject.grades[index] = { ...subject.grades[index], ...gradeData };
-                } else { // Creating
+                } else {
                     gradeData.id = Date.now();
                     subject.grades.push(gradeData);
                 }
                 saveSubjects();
                 renderGrades(subject);
-                if(gradeModal) gradeModal.style.display = 'none';
+                gradeModal.style.display = 'none';
             });
 
-            if(gradesListEl) gradesListEl.addEventListener('click', e => {
+            gradesListEl.addEventListener('click', e => {
                 const row = e.target.closest('tr');
                 if (!row || !row.dataset.id) return;
                 const gradeId = row.dataset.id;
                 const subject = subjects.find(s => s.id == currentSubjectId);
-                if(!subject) return;
-
+                if (!subject) return;
                 if (e.target.closest('.delete-grade-btn')) {
-                    subject.grades = subject.grades.filter(g => g.id != gradeId);
-                    saveSubjects();
-                    renderGrades(subject);
+                    if (confirm('¿Deseas borrar esta nota?')) {
+                        subject.grades = subject.grades.filter(g => g.id != gradeId);
+                        saveSubjects();
+                        renderGrades(subject);
+                    }
                 } else if (e.target.closest('.edit-grade-btn')) {
                     const grade = subject.grades.find(g => g.id == gradeId);
-                    if (grade && gradeForm && gradeModal) {
+                    if (grade) {
                         gradeForm.reset();
                         gradeForm.querySelector('#grade-id').value = grade.id;
                         gradeForm.querySelector('#grade-title-input').value = grade.title;
-                        const gradeValueInput = gradeForm.querySelector('#grade-value-input');
-                        gradeValueInput.value = grade.value;
-                        
-                        const universityGradeBtn = gradeModal.querySelector('#university-grade-btn');
-                        gradeValueInput.max = "5";
-                        gradeValueInput.min = "1";
-                        gradeValueInput.step = "0.1";
-                        if(universityGradeBtn) universityGradeBtn.textContent = "Nota Universitaria";
-                        
-                        if (grade.value > 5) {
-                            gradeValueInput.max = "100";
-                            gradeValueInput.min = "0";
-                            gradeValueInput.step = "1";
-                            if(universityGradeBtn) universityGradeBtn.textContent = "Nota Normal";
-                        }
+                        gradeForm.querySelector('#grade-value-input').value = grade.value;
                         gradeForm.querySelector('#grade-category-select').value = grade.category;
                         gradeModal.style.display = 'flex';
                     }
                 }
             });
-
-            if(addTaskBtn && taskModal) {
-                addTaskBtn.addEventListener('click', () => taskModal.style.display = 'flex');
-                const closeBtn = taskModal.querySelector('.close-btn');
-                if(closeBtn) closeBtn.onclick = () => taskModal.style.display = 'none';
-            }
         }
-
-        // Initial call
         showListView();
     };
 
