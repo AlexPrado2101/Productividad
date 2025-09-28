@@ -15,7 +15,7 @@
             <span class="material-icons-outlined">menu</span>
         </button>
         <aside class="sidebar">
-            <div class="sidebar-header">
+            <div class="sidebar-header"><br><br>
                 <h2>Menú</h2>
                 <div class="global-search-wrapper">
                     <span class="material-icons-outlined">search</span>
@@ -66,7 +66,7 @@
 
             <!-- Página: Calendario -->
             <div id="page-calendario" class="page-wrapper" style="display: none;">
-                <h1>Calendario de Progreso</h1>
+                <h1>Calendario de Progreso</h1><br><br>
                 <div class="calendar-container">
                     <div class="calendar-header">
                         <button id="prev-month-btn" class="control-btn">&lt;</button>
@@ -105,7 +105,7 @@
                             <button id="add-row-btn">+ Fila</button>
                             <button id="add-col-btn">+ Columna</button>
                             <button id="remove-row-btn">- Fila</button>
-                            <button id="remove-col-btn">- Columna</button>
+                            <button id="remove-col-btn">- Columna</button><br><br>
                             <button id="autogen-modal-btn" class="control-btn"><span class="material-icons-outlined">auto_awesome</span>Autogenerar</button>
                         </div>
                     </div>
@@ -146,20 +146,20 @@
 
             <!-- Página: Notas Académicas -->
             <div id="page-notas" class="page-wrapper" style="display: none;">
-                <h1>Notas Académicas</h1>
+                <h1>Notas Académicas</h1><br>
 
                 <div id="notes-container">
                     <!-- Vista Principal: Lista de Materias -->
                     <div id="subjects-list-view">
-                        <h2>Mis Materias</h2>
+                        <h2>Mis Materias</h2><br>
                         <button id="add-subject-btn" class="control-btn"><span class="material-icons-outlined">add</span> Añadir Materia</button>
                         <div id="subjects-list"></div>
                     </div>
 
                     <!-- Vista de Detalle: Materia Individual (oculta por defecto) -->
                     <div id="subject-detail-view" style="display: none;">
+                        <h2 id="subject-title"></h2><br>
                         <button id="back-to-subjects-btn" class="control-btn"><span class="material-icons-outlined">arrow_back</span> Volver</button>
-                        <h2 id="subject-title"></h2>
 
                         <div class="subject-detail-layout">
                             <!-- Columna de Resumen -->
@@ -202,25 +202,20 @@
 
             <!-- Página: Estudio de Inglés -->
             <div id="page-ingles" class="page-wrapper" style="display: none;">
-                <h1>Estudio de Inglés</h1>
-                
-                <div id="ingles-container">
-                    <div class="toolbar">
-                        <input type="search" id="ingles-search-input" placeholder="Filtrar en esta sección..." class="local-search-input">
-                    </div>
+                <h1>Estudio de Inglés</h1><br>
                     <!-- Pestañas -->
                     <div class="tab-switcher">
                         <button class="tab-btn active" data-tab="vocab">Vocabulario</button>
                         <button class="tab-btn" data-tab="grammar">Gramática</button>
                         <button class="tab-btn" data-tab="resources">Recursos</button>
-                    </div>
+                    </div><br>
                 
                     <!-- Contenido de Pestañas -->
                     <div id="vocab-tab-content" class="tab-content active">
-                        <h3>Mi Vocabulario</h3>
+                        <h3>Mi Vocabulario</h3><br>
                         <div class="toolbar">
-                            <button id="add-vocab-btn" class="control-btn"><span class="material-icons-outlined">add</span> Añadir Palabra</button>
-                            <button id="start-flashcards-btn" class="control-btn"><span class="material-icons-outlined">style</span> Iniciar Flashcards</button>
+                            <button id="add-vocab-btn" class="control-btn"><span class="material-icons-outlined">add</span>Añadir Palabra</button>
+                            <button id="start-flashcards-btn" class="control-btn"><span class="material-icons-outlined">style</span>Flashcards</button>
                         </div>
                         <div id="flashcard-view" style="display: none;">
                             <div class="flashcard-container">
@@ -235,13 +230,13 @@
                     </div>
                 
                     <div id="grammar-tab-content" class="tab-content">
-                        <h3>Mis Apuntes de Gramática</h3>
+                        <h3>Mis Apuntes de Gramática</h3><br>
                         <button id="add-grammar-btn" class="control-btn"><span class="material-icons-outlined">add</span> Añadir Regla</button>
-                        <div id="grammar-list"></div>
+                        <div id="grammar-list"></div><br>
                     </div>
                 
                     <div id="resources-tab-content" class="tab-content">
-                        <h3>Mis Recursos</h3>
+                        <h3>Mis Recursos</h3><br>
                         <button id="add-resource-btn" class="control-btn"><span class="material-icons-outlined">add</span> Subir Recurso</button>
                         <div id="resource-gallery"></div>
                     </div>
