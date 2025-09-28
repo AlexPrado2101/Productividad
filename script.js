@@ -10,14 +10,31 @@ class App {
     const applySettings = () => {
     const theme = localStorage.getItem('appTheme') || 'light';
     const accentColor = localStorage.getItem('appAccentColor') || '#3498db';
-    
     document.documentElement.setAttribute('data-theme', theme);
     document.documentElement.style.setProperty('--accent-color', accentColor);
+
+    const backgroundImage = localStorage.getItem('appBackgroundImage');
+    const bgColor = localStorage.getItem('appBgColor');
+    if (backgroundImage) {
+        document.body.style.backgroundImage = `url(${backgroundImage})`;
+        document.body.style.backgroundColor = '';
+    } else if (bgColor) {
+        document.body.style.backgroundImage = 'none';
+        document.body.style.backgroundColor = bgColor;
+    } else {
+        document.body.style.backgroundImage = 'none';
+        document.body.style.backgroundColor = '';
+    }
 };
     
     const initAjustesPage = () => {
+        const page = document.getElementById('page-ajustes');
+        if (!page) return;
+
         const themeSwitch = document.getElementById('theme-switch');
         const colorPalette = document.getElementById('accent-color-palette');
+        const accentColorBtns = document.getElementById('accent-color-btns');
+        const bgColorBtns = document.getElementById('bg-color-btns');
 
         // Sincronizar el estado actual de los controles
         const currentTheme = localStorage.getItem('appTheme') || 'light';
@@ -48,12 +65,76 @@ class App {
             }
         });
 
+        const backgroundImageInput = document.getElementById('background-image-input');
+        const removeBackgroundBtn = document.getElementById('remove-background-btn');
+
+        if (backgroundImageInput) {
+            backgroundImageInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        localStorage.setItem('appBackgroundImage', event.target.result);
+                        applySettings();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        if (removeBackgroundBtn) {
+            removeBackgroundBtn.addEventListener('click', () => {
+                localStorage.removeItem('appBackgroundImage');
+                applySettings();
+            });
+        }
+
+        // --- NUEVO: Botones de color de acento ---
+        if (accentColorBtns) {
+            accentColorBtns.querySelectorAll('.accent-color-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const color = btn.getAttribute('data-color');
+                    localStorage.setItem('appAccentColor', color);
+                    applySettings();
+                    accentColorBtns.querySelectorAll('.accent-color-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                });
+            });
+            // Marcar el botón activo al cargar
+            const currentAccent = localStorage.getItem('appAccentColor') || '#3498db';
+            accentColorBtns.querySelectorAll('.accent-color-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-color').toLowerCase() === currentAccent.toLowerCase());
+            });
+        }
+
+        // --- NUEVO: Botones de color de fondo ---
+        if (bgColorBtns) {
+            bgColorBtns.querySelectorAll('.bg-color-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const color = btn.getAttribute('data-color');
+                    localStorage.setItem('appBgColor', color);
+                    document.body.style.backgroundImage = 'none';
+                    document.body.style.backgroundColor = color;
+                    bgColorBtns.querySelectorAll('.bg-color-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                });
+            });
+            // Marcar el botón activo al cargar
+            const currentBg = localStorage.getItem('appBgColor');
+            bgColorBtns.querySelectorAll('.bg-color-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-color').toLowerCase() === (currentBg || '').toLowerCase());
+            });
+        }
+
         // --- Fase 5: Import/Export ---
         initDataManagement();
     };
 
     // Tu función existente para la página de inglés
     const initInglesPage = () => {
+        const page = document.getElementById('page-ingles');
+        if (!page) return;
+
         let data = JSON.parse(localStorage.getItem('englishData')) || { vocab: [], grammar: [], resources: [] };
         const save = () => localStorage.setItem('englishData', JSON.stringify(data));
 
@@ -83,60 +164,85 @@ class App {
 
         // --- Local Search/Filter ---
         const searchInput = inglesContainer.querySelector('#ingles-search-input');
-        searchInput.addEventListener('input', () => {
-            const query = searchInput.value.toLowerCase();
-            const activeTab = inglesContainer.querySelector('.tab-btn.active').dataset.tab;
-            
-            if (activeTab === 'vocab' || activeTab === 'grammar') {
-                const items = inglesContainer.querySelectorAll(`#${activeTab}-list .card`);
-                items.forEach(item => {
-                    const text = item.textContent.toLowerCase();
-                    if (text.includes(query)) {
-                        item.style.display = '';
-                    } else {
-                        item.style.display = 'none';
-                    }
-                });
-            }
-        });
+        if (searchInput) {
+            searchInput.addEventListener('input', () => {
+                const query = searchInput.value.toLowerCase();
+                const activeTab = inglesContainer.querySelector('.tab-btn.active').dataset.tab;
+                
+                if (activeTab === 'vocab' || activeTab === 'grammar') {
+                    const items = inglesContainer.querySelectorAll(`#${activeTab}-list .card`);
+                    items.forEach(item => {
+                        const text = item.textContent.toLowerCase();
+                        if (text.includes(query)) {
+                            item.style.display = '';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                }
+            });
+        }
 
         // --- Flashcard Logic ---
         const flashcardView = inglesContainer.querySelector('#flashcard-view');
         const vocabList = inglesContainer.querySelector('#vocab-list');
-        const flashcard = flashcardView.querySelector('.flashcard');
-        let currentFlashcardIndex = 0;
+        const startFlashcardsBtn = inglesContainer.querySelector('#start-flashcards-btn');
+        const resourceList = inglesContainer.querySelector('#resource-gallery');
 
-        inglesContainer.querySelector('#start-flashcards-btn').addEventListener('click', () => {
-            if (data.vocab.length === 0) {
-                alert('Añade palabras a tu vocabulario para usar las flashcards.');
-                return;
-            }
-            flashcardView.style.display = 'block';
-            vocabList.style.display = 'none';
-            currentFlashcardIndex = 0;
-            renderFlashcard();
-        });
+        if (flashcardView) {
+            // Hide flashcard view when switching tabs
+            inglesContainer.querySelector('.tab-switcher').addEventListener('click', e => {
+                if (e.target.classList.contains('tab-btn')) {
+                    flashcardView.style.display = 'none';
+                    vocabList.style.display = 'block';
+                    startFlashcardsBtn.style.display = e.target.dataset.tab === 'vocab' ? 'inline-flex' : 'none';
+                    resourceList.style.display = e.target.dataset.tab === 'resources' ? 'grid' : 'none';
+                    vocabList.style.display = e.target.dataset.tab === 'vocab' ? 'block' : 'none';
+                }
+            });
 
-        const renderFlashcard = () => {
-            const cardData = data.vocab[currentFlashcardIndex];
-            flashcard.classList.remove('is-flipped');
-            flashcard.querySelector('.flashcard-front').textContent = cardData.term;
-            flashcard.querySelector('.flashcard-back').textContent = cardData.translation;
-        };
+            const flashcard = flashcardView.querySelector('.flashcard');
+            let currentFlashcardIndex = 0;
 
-        flashcard.addEventListener('click', () => {
-            flashcard.classList.toggle('is-flipped');
-        });
+            inglesContainer.querySelector('#start-flashcards-btn').addEventListener('click', () => {
+                if (data.vocab.length === 0) {
+                    alert('Añade palabras a tu vocabulario para usar las flashcards.');
+                    return;
+                }
+                flashcardView.style.display = 'block';
+                startFlashcardsBtn.style.display = 'none';
+                vocabList.style.display = 'none';
+                currentFlashcardIndex = 0;
+                renderFlashcard();
+            });
 
-        flashcardView.querySelector('#prev-flashcard-btn').addEventListener('click', () => {
-            currentFlashcardIndex = (currentFlashcardIndex - 1 + data.vocab.length) % data.vocab.length;
-            renderFlashcard();
-        });
+            const renderFlashcard = () => {
+                const cardData = data.vocab[currentFlashcardIndex];
+                flashcard.classList.remove('is-flipped');
+                flashcard.querySelector('.flashcard-front').textContent = cardData.term;
+                flashcard.querySelector('.flashcard-back').textContent = cardData.translation;
+            };
 
-        flashcardView.querySelector('#next-flashcard-btn').addEventListener('click', () => {
-            currentFlashcardIndex = (currentFlashcardIndex + 1) % data.vocab.length;
-            renderFlashcard();
-        });
+            flashcard.addEventListener('click', () => {
+                flashcard.classList.toggle('is-flipped');
+            });
+
+            flashcardView.querySelector('#prev-flashcard-btn').addEventListener('click', () => {
+                currentFlashcardIndex = (currentFlashcardIndex - 1 + data.vocab.length) % data.vocab.length;
+                renderFlashcard();
+            });
+
+            flashcardView.querySelector('#next-flashcard-btn').addEventListener('click', () => {
+                currentFlashcardIndex = (currentFlashcardIndex + 1) % data.vocab.length;
+                renderFlashcard();
+            });
+
+            flashcardView.querySelector('#exit-flashcards-btn').addEventListener('click', () => {
+                flashcardView.style.display = 'none';
+                vocabList.style.display = 'block';
+                startFlashcardsBtn.style.display = 'inline-flex';
+            });
+        }
 
         const setupCrud = (type) => {
             const modal = modals[type];
@@ -153,15 +259,27 @@ class App {
                             <p>${item.example}</p>
                             <div class="card-actions"><button class="edit-btn control-btn">Editar</button><button class="delete-btn remove-btn"><span class="material-icons-outlined">delete</span></button></div>
                         </div>`).join('');
-                } else if (type === 'grammar') { // ... 'resource' type would be handled here
+                } else if (type === 'grammar') {
                     html = data.grammar.map(item => `<div class="card" data-id="${item.id}"><h4>${item.title}</h4><p>${item.description}</p><div class="card-actions"><button class="edit-btn control-btn">Editar</button><button class="delete-btn remove-btn"><span class="material-icons-outlined">delete</span></button></div></div>`).join('');
+                } else if (type === 'resources') {
+                    html = data.resources.map(item => `
+                        <div class="drawing-card" data-id="${item.id}">
+                            <a href="${item.fileData}" target="_blank" title="Abrir en nueva pestaña">
+                                ${item.fileData.startsWith('data:image') 
+                                    ? `<img src="${item.fileData}" alt="${item.name}">` 
+                                    : `<div class="file-placeholder"><span class="material-icons-outlined">description</span></div>`
+                                }
+                            </a>
+                            <div class="drawing-card-content"><p>${item.name}</p></div>
+                            <button class="delete-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
+                        </div>`).join('');
                 }
                 listEl.innerHTML = html || '<p>No hay entradas.</p>';
             };
 
-            inglesContainer.querySelector(`#add-${type}-btn`).onclick = () => {
-                flashcardView.style.display = 'none';
-                vocabList.style.display = 'block';
+            document.getElementById(`add-${type}-btn`).onclick = () => {
+                if(flashcardView) flashcardView.style.display = 'none';
+                if(vocabList) vocabList.style.display = 'block';
                 form.reset();
                 const hiddenId = form.querySelector('input[type="hidden"]');
                 if(hiddenId) hiddenId.value = '';
@@ -184,6 +302,10 @@ class App {
                         } else if (type === 'grammar') {
                             form.querySelector('#grammar-title').value = item.title;
                             form.querySelector('#grammar-description').value = item.description;
+                        } else if (type === 'resources') {
+                            form.querySelector('input[type="hidden"]').value = item.id;
+                            form.querySelector('#resource-name').value = item.name;
+                            // Cannot pre-fill file input
                         }
                         modal.style.display = 'flex';
                     }
@@ -197,12 +319,12 @@ class App {
                 }
             });
 
-            form.onsubmit = e => {
+            form.onsubmit = async (e) => {
                 e.preventDefault();
                 if (!validateForm(form)) return;
                 
                 const idInput = form.querySelector('input[type="hidden"]');
-                const id = (idInput ? idInput.value : null) || Date.now().toString();
+                const id = (idInput ? idInput.value : null) || Date.now().toString(); // Use existing ID or create new
                 let newItem;
 
                 if (type === 'vocab') {
@@ -218,6 +340,33 @@ class App {
                         title: form.querySelector('#grammar-title').value,
                         description: form.querySelector('#grammar-description').value,
                     };
+                } else if (type === 'resources') {
+                    const fileInput = form.querySelector('#resource-file');
+                    const file = fileInput.files[0];
+                    let fileData = null;
+
+                    if (file) {
+                        fileData = await new Promise((resolve) => {
+                            const reader = new FileReader();
+                            reader.onload = (e) => resolve(e.target.result);
+                            reader.readAsDataURL(file);
+                        });
+                    }
+
+                    const existingItem = data.resources.find(i => i.id === id);
+
+                    if (!fileData && !existingItem) {
+                        alert('Por favor, selecciona un archivo.');
+                        return;
+                    }
+
+                    newItem = { id, name: form.querySelector('#resource-name').value };
+                    newItem.fileData = fileData || (existingItem ? existingItem.fileData : null); // Keep old file if new one isn't provided
+
+                    if (!newItem.fileData) {
+                        alert('Por favor, selecciona un archivo.');
+                        return;
+                    }
                 }
 
                 const index = data[type].findIndex(i => i.id === id);
@@ -235,10 +384,13 @@ class App {
 
         setupCrud('vocab');
         setupCrud('grammar');
-        // setupCrud('resource'); // Resource is more complex
+        setupCrud('resources');
     };
     
     const initHorariosPage = () => {
+        const page = document.getElementById('page-horarios');
+        if (!page) return;
+
         let schedules = JSON.parse(localStorage.getItem('schedules')) || {};
         let currentScheduleName = localStorage.getItem('currentSchedule') || 'Mi Horario';
 
@@ -247,10 +399,11 @@ class App {
             localStorage.setItem('currentSchedule', currentScheduleName);
         };
 
-        const page = document.getElementById('page-horarios');
         const selector = page.querySelector('#schedule-selector');
         const table = page.querySelector('#schedule-table');
-        const intervalSelect = page.querySelector('#schedule-interval-select');
+        
+        const autogenModal = page.querySelector('#autogen-schedule-modal');
+        const autogenForm = page.querySelector('#autogen-schedule-form');
 
 
         const renderTable = () => {
@@ -267,7 +420,6 @@ class App {
                 };
                 schedules[currentScheduleName] = scheduleData;
             }
-            intervalSelect.value = scheduleData.interval || 60;
 
             table.innerHTML = `
                 <thead>
@@ -291,202 +443,325 @@ class App {
             if (!currentScheduleName) currentScheduleName = Object.keys(schedules)[0];
         };
 
-        page.querySelector('#new-schedule-btn').addEventListener('click', () => {
-            const name = prompt('Nombre del nuevo horario:', `Horario ${Object.keys(schedules).length + 1}`);
-            if (name && !schedules[name]) {
-                currentScheduleName = name;
-                schedules[name] = null; // Will be initialized on render
-                populateSelector();
+        if (!page.dataset.listenersAttached) {
+            page.dataset.listenersAttached = 'true';
+
+            page.querySelector('#new-schedule-btn').addEventListener('click', () => {
+                const name = prompt('Nombre del nuevo horario:', `Horario ${Object.keys(schedules).length + 1}`);
+                if (name && !schedules[name]) {
+                    currentScheduleName = name;
+                    schedules[name] = null; // Will be initialized on render
+                    populateSelector();
+                    renderTable();
+                    save();
+                } else if (name) {
+                    alert('Ese nombre ya existe.');
+                }
+            });
+
+            selector.addEventListener('change', () => {
+                currentScheduleName = selector.value;
                 renderTable();
                 save();
-            } else if (name) {
-                alert('Ese nombre ya existe.');
-            }
-        });
+            });
 
-        selector.addEventListener('change', () => {
-            currentScheduleName = selector.value;
-            renderTable();
-            save();
-        });
-
-        page.querySelector('#save-schedule-btn').addEventListener('click', () => {
-            const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent);
-            const rows = Array.from(table.querySelectorAll('tbody tr')).map(tr => 
-                Array.from(tr.querySelectorAll('td')).map(td => td.textContent)
-            );
-            schedules[currentScheduleName] = { headers, rows, interval: intervalSelect.value };
-            save();
-            alert('Horario guardado.');
-        });
-
-        page.querySelector('#delete-schedule-btn').addEventListener('click', () => {
-            if (Object.keys(schedules).length <= 1) {
-                alert('No puedes eliminar el único horario que existe.');
-                return;
-            }
-            if (confirm(`¿Eliminar el horario "${currentScheduleName}"?`)) {
-                delete schedules[currentScheduleName];
-                currentScheduleName = Object.keys(schedules)[0];
-                populateSelector();
-                renderTable();
+            page.querySelector('#save-schedule-btn').addEventListener('click', () => {
+                const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent);
+                const rows = Array.from(table.querySelectorAll('tbody tr')).map(tr => 
+                    Array.from(tr.querySelectorAll('td')).map(td => td.textContent)
+                );
+                schedules[currentScheduleName] = { headers, rows, interval: schedules[currentScheduleName]?.interval || 60 };
                 save();
-            }
-        });
+                alert('Horario guardado.');
+            });
 
-        // --- New Functionality ---
+            page.querySelector('#delete-schedule-btn').addEventListener('click', () => {
+                if (Object.keys(schedules).length <= 1) {
+                    alert('No puedes eliminar el único horario que existe.');
+                    return;
+                }
+                if (confirm(`¿Eliminar el horario "${currentScheduleName}"?`)) {
+                    delete schedules[currentScheduleName];
+                    currentScheduleName = Object.keys(schedules)[0];
+                    populateSelector();
+                    renderTable();
+                    save();
+                }
+            });
 
-        page.querySelector('#add-col-btn').addEventListener('click', () => {
-            const headerRow = table.querySelector('thead tr');
-            if (headerRow.cells.length >= 8) { // Hora + 7 days
-                alert('Máximo 7 días de la semana.');
-                return;
-            }
-            const dayName = prompt('Nombre del nuevo día:', 'Sábado');
-            if (dayName) {
-                headerRow.insertAdjacentHTML('beforeend', `<th>${dayName}</th>`);
-                table.querySelectorAll('tbody tr').forEach(row => {
-                    row.insertAdjacentHTML('beforeend', `<td contenteditable="true"></td>`);
-                });
-            }
-        });
+            page.querySelector('#add-col-btn').addEventListener('click', () => {
+                const headerRow = table.querySelector('thead tr');
+                const currentHeaders = Array.from(headerRow.cells).map(cell => cell.textContent);
+                
+                const weekDays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+                
+                let lastDayIndex = -1;
+                for (let i = currentHeaders.length - 1; i >= 0; i--) {
+                    const header = currentHeaders[i];
+                    const index = weekDays.indexOf(header);
+                    if (index !== -1) {
+                        lastDayIndex = index;
+                        break;
+                    }
+                }
 
-        page.querySelector('#remove-col-btn').addEventListener('click', () => {
-            const headerRow = table.querySelector('thead tr');
-            if (headerRow.cells.length <= 2) return;
-            headerRow.lastElementChild.remove();
-            table.querySelectorAll('tbody tr').forEach(row => row.lastElementChild.remove());
-        });
+                if (lastDayIndex === -1) { 
+                    lastDayIndex = -1;
+                }
 
-        page.querySelector('#add-row-btn').addEventListener('click', () => {
-            const lastRow = table.querySelector('tbody').lastElementChild;
-            if (!lastRow) return; // No rows to base from
-            const newRow = lastRow.cloneNode(true);
-            const timeCell = newRow.cells[0];
-            const lastTime = lastRow.cells[0].textContent.split(' - ')[1]; // "09:00"
-            
-            const [h, m] = lastTime.split(':').map(Number);
-            const interval = parseInt(intervalSelect.value);
-            
-            const nextDate = new Date();
-            nextDate.setHours(h, m + interval, 0);
+                if (lastDayIndex === weekDays.length - 1) {
+                    alert('La semana solo tiene 7 dias, Haz un Nuevo Horario!');
+                    return;
+                }
 
-            const format = (d) => d.toTimeString().slice(0, 5);
-            timeCell.textContent = `${lastTime} - ${format(nextDate)}`;
+                const nextDay = weekDays[lastDayIndex + 1];
 
-            newRow.querySelectorAll('td:not(:first-child)').forEach(cell => cell.textContent = '');
-            table.querySelector('tbody').appendChild(newRow);
-        });
+                if (nextDay) {
+                    headerRow.insertAdjacentHTML('beforeend', `<th>${nextDay}</th>`);
+                    table.querySelectorAll('tbody tr').forEach(row => {
+                        row.insertAdjacentHTML('beforeend', `<td contenteditable="true"></td>`);
+                    });
+                }
+            });
 
-        page.querySelector('#remove-row-btn').addEventListener('click', () => {
-            const body = table.querySelector('tbody');
-            if (body.rows.length > 1) {
-                body.lastElementChild.remove();
-            }
-        });
+            page.querySelector('#remove-col-btn').addEventListener('click', () => {
+                const headerRow = table.querySelector('thead tr');
+                if (headerRow.cells.length <= 2) return;
+                headerRow.lastElementChild.remove();
+                table.querySelectorAll('tbody tr').forEach(row => row.lastElementChild.remove());
+            });
 
-        page.querySelector('#autogen-btn').addEventListener('click', () => {
-            const hours = parseInt(page.querySelector('#autogen-hours-select').value);
-            const body = table.querySelector('tbody');
-            body.innerHTML = '';
-            let startTime = new Date();
-            startTime.setHours(8, 0, 0); // Start at 8 AM
+            page.querySelector('#add-row-btn').addEventListener('click', () => {
+                const lastRow = table.querySelector('tbody').lastElementChild;
+                if (!lastRow) return; 
+                const newRow = lastRow.cloneNode(true);
+                const timeCell = newRow.cells[0];
+                const lastTime = lastRow.cells[0].textContent.split(' - ')[1];
+                
+                const [h, m] = lastTime.split(':').map(Number);
+                const interval = schedules[currentScheduleName]?.interval || 60;
+                
+                const nextDate = new Date();
+                nextDate.setHours(h, m + interval, 0);
 
-            for (let i = 0; i < hours; i++) {
-                const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
-                const timeLabel = `${startTime.toTimeString().slice(0,5)} - ${endTime.toTimeString().slice(0,5)}`;
-                const numCols = table.querySelector('thead tr').cells.length;
-                body.innerHTML += `<tr><td>${timeLabel}</td>${'<td contenteditable="true"></td>'.repeat(numCols - 1)}</tr>`;
-                startTime = endTime;
-            }
-        });
+                const format = (d) => d.toTimeString().slice(0, 5);
+                timeCell.textContent = `${lastTime} - ${format(nextDate)}`;
+
+                newRow.querySelectorAll('td:not(:first-child)').forEach(cell => cell.textContent = '');
+                table.querySelector('tbody').appendChild(newRow);
+            });
+
+            page.querySelector('#remove-row-btn').addEventListener('click', () => {
+                const body = table.querySelector('tbody');
+                if (body.rows.length > 1) {
+                    body.lastElementChild.remove();
+                }
+            });
+
+            page.querySelector('#autogen-modal-btn').addEventListener('click', () => {
+                autogenModal.style.display = 'flex';
+            });
+
+            autogenModal.querySelector('.close-btn').onclick = () => autogenModal.style.display = 'none';
+
+            autogenForm.addEventListener('submit', e => {
+                e.preventDefault();
+                const startTime = autogenForm.querySelector('#autogen-start-time').value;
+                const endTime = autogenForm.querySelector('#autogen-end-time').value;
+                const interval = parseInt(autogenForm.querySelector('#autogen-interval').value);
+
+                if (startTime >= endTime) {
+                    alert('La hora de inicio debe ser anterior a la hora de finalización.');
+                    return;
+                }
+
+                const body = table.querySelector('tbody');
+                body.innerHTML = '';
+                let currentTime = new Date(`1970-01-01T${startTime}`);
+                const endDateTime = new Date(`1970-01-01T${endTime}`);
+
+                while (currentTime < endDateTime) {
+                    const nextTime = new Date(currentTime.getTime() + interval * 60000);
+                    const timeLabel = `${currentTime.toTimeString().slice(0,5)} - ${nextTime.toTimeString().slice(0,5)}`;
+                    const numCols = table.querySelector('thead tr').cells.length;
+                    body.innerHTML += `<tr><td>${timeLabel}</td>${'<td contenteditable="true"></td>'.repeat(numCols - 1)}</tr>`;
+                    currentTime = nextTime;
+                }
+                autogenModal.style.display = 'none';
+            });
+        }
 
         populateSelector();
         renderTable();
     };
 
     const initDibujoPage = () => {
-        let drawings = JSON.parse(localStorage.getItem('drawingLog')) || [];
-        const save = () => localStorage.setItem('drawingLog', JSON.stringify(drawings));
-
         const page = document.getElementById('page-dibujo');
-        const gallery = page.querySelector('#drawing-gallery');
-        const modal = page.querySelector('#drawing-modal');
-        const form = page.querySelector('#drawing-form');
-        const preview = page.querySelector('#drawing-preview');
-        const imageInput = page.querySelector('#drawing-image');
+        if (!page) return;
 
-        const render = () => {
-            gallery.innerHTML = drawings.map(d => `
-                <div class="drawing-card" data-id="${d.id}">
-                    <img src="${d.imageBase64}" alt="${d.description}">
-                    <div class="drawing-card-content">
-                        <p>${d.description.substring(0, 50)}...</p>
-                        <small>${new Date(d.date).toLocaleString()}</small>
-                    </div><button class="delete-drawing-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
-                </div>
-            `).join('');
+        // Tab switching
+        const tabSwitcher = page.querySelector('.tab-switcher');
+        if (tabSwitcher) {
+            tabSwitcher.addEventListener('click', e => {
+                if (e.target.classList.contains('tab-btn')) {
+                    const tab = e.target.dataset.tab;
+                    page.querySelectorAll('.tab-btn, .tab-content').forEach(el => el.classList.remove('active'));
+                    e.target.classList.add('active');
+                    page.querySelector(`#${tab}-tab-content`).classList.add('active');
+                }
+            });
+        }
+
+        const initDrawingCrud = () => {
+            let drawings = JSON.parse(localStorage.getItem('drawingLog')) || [];
+            const save = () => localStorage.setItem('drawingLog', JSON.stringify(drawings));
+
+            const gallery = page.querySelector('#drawing-gallery');
+            const modal = page.querySelector('#drawing-modal');
+            const form = page.querySelector('#drawing-form');
+            const preview = page.querySelector('#drawing-preview');
+            const imageInput = page.querySelector('#drawing-image');
+
+            const render = () => {
+                gallery.innerHTML = drawings.map(d => `
+                    <div class="drawing-card" data-id="${d.id}">
+                        <img src="${d.imageBase64}" alt="${d.description}">
+                        <div class="drawing-card-content">
+                            <p>${d.description.substring(0, 50)}...</p>
+                            <small>${new Date(d.date).toLocaleString()}</small>
+                        </div><button class="delete-drawing-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
+                    </div>
+                `).join('');
+            };
+
+            page.querySelector('#add-drawing-btn').addEventListener('click', () => {
+                form.reset();
+                form.querySelector('#drawing-id').value = '';
+                preview.style.display = 'none';
+                modal.style.display = 'flex';
+            });
+
+            modal.querySelector('.close-btn').onclick = () => modal.style.display = 'none';
+
+            imageInput.addEventListener('change', e => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        preview.src = event.target.result;
+                        preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            form.addEventListener('submit', e => {
+                e.preventDefault();
+                if (!preview.src || !preview.src.startsWith('data:image')) {
+                    alert('Por favor, selecciona un archivo de imagen válido.');
+                    return;
+                }
+                const newDrawing = {
+                    id: Date.now(),
+                    description: form.querySelector('#drawing-desc').value,
+                    date: new Date().toISOString(),
+                    imageBase64: preview.src
+                };
+                drawings.unshift(newDrawing);
+                save();
+                render();
+                modal.style.display = 'none';
+            });
+
+            gallery.addEventListener('click', e => {
+                if (e.target.closest('.delete-drawing-btn')) {
+                    const card = e.target.closest('.drawing-card');
+                    if (confirm('¿Eliminar este dibujo?')) {
+                        drawings = drawings.filter(d => d.id != card.dataset.id);
+                        save();
+                        render();
+                    }
+                }
+            });
+
+            render();
         };
 
-        page.querySelector('#add-drawing-btn').addEventListener('click', () => {
-            form.reset();
-            form.querySelector('#drawing-id').value = '';
-            preview.style.display = 'none';
-            modal.style.display = 'flex';
-        });
+        const initInspirationCrud = () => {
+            let inspirations = JSON.parse(localStorage.getItem('inspirationImages')) || [];
+            const save = () => localStorage.setItem('inspirationImages', JSON.stringify(inspirations));
 
-        modal.querySelector('.close-btn').onclick = () => modal.style.display = 'none';
+            const gallery = page.querySelector('#inspiration-gallery');
+            const modal = page.querySelector('#inspiration-modal');
+            const form = page.querySelector('#inspiration-form');
+            const preview = page.querySelector('#inspiration-preview');
+            const imageInput = page.querySelector('#inspiration-image');
 
-        imageInput.addEventListener('change', e => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    preview.src = event.target.result;
-                    preview.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        form.addEventListener('submit', e => {
-            e.preventDefault();
-            // Ensure an image has been selected and loaded
-            if (!preview.src || !preview.src.startsWith('data:image')) {
-                alert('Por favor, selecciona un archivo de imagen válido.');
-                return;
-            }
-            const newDrawing = {
-                id: Date.now(),
-                description: form.querySelector('#drawing-desc').value,
-                date: new Date().toISOString(),
-                imageBase64: preview.src
+            const render = () => {
+                gallery.innerHTML = inspirations.map(d => `
+                    <div class="drawing-card" data-id="${d.id}">
+                        <img src="${d.imageBase64}" alt="${d.name}">
+                        <div class="drawing-card-content">
+                            <p>${d.name}</p>
+                        </div><button class="delete-inspiration-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
+                    </div>
+                `).join('');
             };
-            drawings.unshift(newDrawing);
-            save();
+
+            page.querySelector('#add-inspiration-btn').addEventListener('click', () => {
+                form.reset();
+                form.querySelector('#inspiration-id').value = '';
+                preview.style.display = 'none';
+                modal.style.display = 'flex';
+            });
+
+            modal.querySelector('.close-btn').onclick = () => modal.style.display = 'none';
+
+            imageInput.addEventListener('change', e => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        preview.src = event.target.result;
+                        preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            form.addEventListener('submit', e => {
+                e.preventDefault();
+                if (!preview.src || !preview.src.startsWith('data:image')) {
+                    alert('Por favor, selecciona un archivo de imagen válido.');
+                    return;
+                }
+                const newInspiration = {
+                    id: Date.now(),
+                    name: form.querySelector('#inspiration-name').value,
+                    imageBase64: preview.src
+                };
+                inspirations.unshift(newInspiration);
+                save();
+                render();
+                modal.style.display = 'none';
+            });
+
+            gallery.addEventListener('click', e => {
+                if (e.target.closest('.delete-inspiration-btn')) {
+                    const card = e.target.closest('.drawing-card');
+                    if (confirm('¿Eliminar esta inspiración?')) {
+                        inspirations = inspirations.filter(d => d.id != card.dataset.id);
+                        save();
+                        render();
+                    }
+                }
+            });
+
             render();
-            modal.style.display = 'none';
-        });
+        };
 
-        gallery.addEventListener('click', e => {
-            if (e.target.classList.contains('delete-drawing-btn')) {
-                const card = e.target.closest('.drawing-card');
-                if (confirm('¿Eliminar este dibujo?')) {
-                    drawings = drawings.filter(d => d.id != card.dataset.id);
-                    save();
-                    render();
-                }
-            } else if (e.target.closest('.delete-drawing-btn')) { // For clicks on the icon inside the button
-                const card = e.target.closest('.drawing-card');
-                if (confirm('¿Eliminar este dibujo?')) {
-                    drawings = drawings.filter(d => d.id != card.dataset.id);
-                    save();
-                    render();
-                }
-            }
-        });
-
-        render();
+        initDrawingCrud();
+        initInspirationCrud();
     };
 
     const initDataManagement = () => {
@@ -553,6 +828,9 @@ class App {
 
     // --- Marcadores de posición para futuras páginas ---
     const initEjercicioPage = () => {
+        const page = document.getElementById('page-ejercicio');
+        if (!page) return;
+
         // --- State and Data ---
         let routines = JSON.parse(localStorage.getItem('exerciseRoutines')) || [];
         let logbook = JSON.parse(localStorage.getItem('exerciseLogbook')) || [];
@@ -562,10 +840,9 @@ class App {
         let mainTimerInterval;
         let mainTimerSeconds = 0;
         let restTimerInterval;
-        let restTimerSeconds = 0;
+        let restTimerSeconds = 180; // 180 seconds default rest time
 
         // --- DOM Elements ---
-        const page = document.getElementById('page-ejercicio');
         const sessionView = page.querySelector('#active-session-view');
         const routinesView = page.querySelector('#routine-management-view');
         const logbookView = page.querySelector('#logbook-view');
@@ -580,8 +857,20 @@ class App {
         const routineModal = page.querySelector('#routine-modal');
         const routineForm = page.querySelector('#routine-form');
         const restTimerWrapper = page.querySelector('#rest-timer-wrapper');
+        const exercisesContainer = routineForm.querySelector('#exercises-container');
         const restTimerDisplay = page.querySelector('#rest-timer');
         const logbookEntries = page.querySelector('#logbook-entries');
+        const skipRestBtn = page.querySelector('#skip-rest-btn');
+        const restTimeInput = page.querySelector('#rest-time-input');
+
+        if (restTimeInput) {
+            restTimeInput.value = localStorage.getItem('restTime') || 180;
+
+            restTimeInput.addEventListener('change', () => {
+                localStorage.setItem('restTime', restTimeInput.value);
+            });
+        }
+
 
         // --- View Switching ---
         page.querySelector('.view-switcher').addEventListener('click', e => {
@@ -613,6 +902,33 @@ class App {
         };
 
         const updateMainTimer = () => mainTimerDisplay.textContent = formatTime(mainTimerSeconds);
+
+        const startRestTimer = () => {
+            restTimerWrapper.style.display = 'flex';
+            restTimerSeconds = parseInt(localStorage.getItem('restTime')) || 180;
+            restTimerDisplay.textContent = formatTime(restTimerSeconds);
+            restTimerInterval = setInterval(() => {
+                restTimerSeconds--;
+                restTimerDisplay.textContent = formatTime(restTimerSeconds);
+                if (restTimerSeconds <= 0) {
+                    clearInterval(restTimerInterval);
+                    restTimerWrapper.style.display = 'none';
+                }
+            }, 1000);
+        };
+
+        skipRestBtn.addEventListener('click', () => {
+            clearInterval(restTimerInterval);
+            restTimerWrapper.style.display = 'none';
+        });
+
+        routineDisplay.addEventListener('click', (e) => {
+            if (e.target.classList.contains('series-checkbox')) {
+                if (e.target.checked) {
+                    startRestTimer();
+                }
+            }
+        });
 
         startPauseBtn.addEventListener('click', () => {
             if (mainTimerInterval) { // Pausar
@@ -654,11 +970,18 @@ class App {
                 
                 const completedExercises = [];
                 routineDisplay.querySelectorAll('.exercise-item').forEach(exEl => {
-                    const checkedSeries = exEl.querySelectorAll('input[type="checkbox"]:checked').length;
-                    if (checkedSeries > 0) {
+                    const checkedSeriesCount = exEl.querySelectorAll('input[type="checkbox"]:checked').length;
+                    if (checkedSeriesCount > 0) {
+                        const exerciseData = routine.groups
+                            .flatMap(g => g.exercises)
+                            .find(ex => ex.id == exEl.dataset.exerciseId);
+
                         completedExercises.push({
-                            name: exEl.querySelector('h5').textContent.split('(')[0].trim(),
-                            // Aquí podrías guardar más detalles si los campos fueran editables en la sesión
+                            name: exerciseData.name,
+                            sets: checkedSeriesCount,
+                            reps: exerciseData.reps,
+                            weight: exerciseData.weight,
+                            notes: exerciseData.notes
                         });
                     }
                 });
@@ -672,7 +995,7 @@ class App {
                 };
                 logbook.unshift(entry);
                 saveLogbook();
-                renderLogbook();
+                renderLogbook(); // Update the logbook view
                 resetSessionBtn.click(); // Resetea el estado
                 alert('Sesión guardada en la bitácora.');
             }
@@ -697,7 +1020,7 @@ class App {
 
         createRoutineBtn.addEventListener('click', () => {
             routineForm.reset();
-            routineForm.querySelector('#routine-id').value = '';
+            routineForm.querySelector('#routine-id').value = ''; // Clear ID for creation
             routineForm.querySelector('#exercises-container').innerHTML = '';
             routineModal.style.display = 'flex';
         });
@@ -712,11 +1035,101 @@ class App {
                     saveRoutines();
                     renderRoutines();
                 }
+            } else if (e.target.closest('.edit-routine-btn')) {
+                const routine = routines.find(r => r.id == id);
+                if (routine) {
+                    routineForm.reset();
+                    routineForm.querySelector('#routine-id').value = routine.id;
+                    routineForm.querySelector('#routine-name').value = routine.name;
+                    renderRoutineForm(routine.groups || []);
+                    routineModal.style.display = 'flex';
+                }
             }
-            // Lógica de edición aquí...
         });
 
         routineModal.querySelector('.close-btn').onclick = () => routineModal.style.display = 'none';
+
+        // --- Routine Form Logic ---
+        const renderRoutineForm = (groups) => {
+            exercisesContainer.innerHTML = groups.map((group, groupIndex) => `
+                <div class="dynamic-form-group" data-group-index="${groupIndex}">
+                    <div class="dynamic-form-group-header">
+                        <input type="text" class="muscle-group-name" placeholder="Nombre Grupo Muscular (ej. Pecho)" value="${group.name}" required>
+                        <button type="button" class="remove-btn remove-group-btn"><span class="material-icons-outlined">delete</span></button>
+                    </div>
+                    <div class="exercises-list">
+                        ${(group.exercises || []).map((ex, exIndex) => `
+                            <div class="dynamic-exercise-item" data-exercise-index="${exIndex}">
+                                <input type="text" placeholder="Ejercicio" value="${ex.name}" required>
+                                <input type="number" placeholder="Series" value="${ex.sets}" required>
+                                <input type="text" placeholder="Reps" value="${ex.reps}" required>
+                                <input type="number" placeholder="Peso (kg)" value="${ex.weight || ''}">
+                                <input type="text" placeholder="Notas" value="${ex.notes || ''}">
+                                <button type="button" class="remove-btn remove-exercise-btn"><span class="material-icons-outlined">delete</span></button>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button type="button" class="control-btn add-exercise-to-group-btn">Añadir Ejercicio</button>
+                </div>
+            `).join('');
+        };
+
+        routineForm.querySelector('#add-exercise-group-btn').addEventListener('click', () => {
+            const newGroup = document.createElement('div');
+            newGroup.className = 'dynamic-form-group';
+            newGroup.innerHTML = `
+                <div class="dynamic-form-group-header">
+                    <input type="text" class="muscle-group-name" placeholder="Nombre Grupo Muscular (ej. Pecho)" required>
+                    <button type="button" class="remove-btn remove-group-btn"><span class="material-icons-outlined">delete</span></button>
+                </div>
+                <div class="exercises-list"></div>
+                <button type="button" class="control-btn add-exercise-to-group-btn">Añadir Ejercicio</button>
+            `;
+            exercisesContainer.appendChild(newGroup);
+        });
+
+        exercisesContainer.addEventListener('click', e => {
+            if (e.target.closest('.add-exercise-to-group-btn')) {
+                const list = e.target.previousElementSibling;
+                const newExercise = document.createElement('div');
+                newExercise.className = 'dynamic-exercise-item';
+                newExercise.innerHTML = `
+                    <input type="text" placeholder="Ejercicio" required>
+                    <input type="number" placeholder="Series" required>
+                    <input type="text" placeholder="Reps" required>
+                    <input type="number" placeholder="Peso (kg)">
+                    <input type="text" placeholder="Notas">
+                    <button type="button" class="remove-btn remove-exercise-btn"><span class="material-icons-outlined">delete</span></button>
+                `;
+                list.appendChild(newExercise);
+            }
+            if (e.target.closest('.remove-group-btn')) e.target.closest('.dynamic-form-group').remove();
+            if (e.target.closest('.remove-exercise-btn')) e.target.closest('.dynamic-exercise-item').remove();
+        });
+
+        routineForm.addEventListener('submit', e => {
+            e.preventDefault();
+            const id = routineForm.querySelector('#routine-id').value || Date.now().toString();
+            const name = routineForm.querySelector('#routine-name').value;
+            const groups = Array.from(exercisesContainer.querySelectorAll('.dynamic-form-group')).map(groupEl => ({
+                name: groupEl.querySelector('.muscle-group-name').value,
+                exercises: Array.from(groupEl.querySelectorAll('.dynamic-exercise-item')).map(exEl => ({
+                    id: Date.now() + Math.random(), // Simple unique ID for session tracking
+                    name: exEl.children[0].value,
+                    sets: parseInt(exEl.children[1].value),
+                    reps: exEl.children[2].value,
+                    weight: parseFloat(exEl.children[3].value) || null,
+                    notes: exEl.children[4].value
+                }))
+            }));
+            const newRoutine = { id, name, groups };
+            const index = routines.findIndex(r => r.id == id);
+            if (index > -1) routines[index] = newRoutine;
+            else routines.push(newRoutine);
+            saveRoutines();
+            renderRoutines();
+            routineModal.style.display = 'none';
+        });
 
         // --- Active Session ---
         routineSelector.addEventListener('change', () => {
@@ -737,12 +1150,12 @@ class App {
                     <div class="muscle-group-header"><h4>${group.name}</h4></div>
                     <div class="exercise-details">
                         ${(group.exercises || []).map(ex => `
-                            <div class="exercise-item" data-exercise-id="${ex.id}">
-                                <h5>${ex.name} (${ex.sets}x${ex.reps} @ ${ex.weight}kg)</h5>
+                            <div class="exercise-item" data-exercise-id="${ex.id}" data-exercise-name="${ex.name}">
+                                <h5>${ex.name} (${ex.sets}x${ex.reps} ${ex.weight ? `@ ${ex.weight}kg` : ''})</h5>
                                 <div class="series-list">
                                     ${Array.from({ length: ex.sets }, (_, i) => `
                                         <div class="series-item">
-                                            <input type="checkbox" id="serie-${ex.id}-${i}">
+                                            <input type="checkbox" id="serie-${ex.id}-${i}" class="series-checkbox">
                                             <label for="serie-${ex.id}-${i}">Serie ${i + 1}</label>
                                         </div>
                                     `).join('')}</div><button class="control-btn finish-exercise-btn"><span class="material-icons-outlined">check_circle</span>Terminar Ejercicio</button>
@@ -827,13 +1240,15 @@ class App {
     };
 
     const initNotasPage = () => {
+        const page = document.getElementById('page-notas');
+        if (!page) return;
+
         // --- State and Data ---
         let subjects = JSON.parse(localStorage.getItem('academicSubjects')) || [];
         const saveSubjects = () => localStorage.setItem('academicSubjects', JSON.stringify(subjects, null, 2));
         let currentSubjectId = null;
 
         // --- DOM Elements ---
-        const page = document.getElementById('page-notas');
         const listView = page.querySelector('#subjects-list-view');
         const detailView = page.querySelector('#subject-detail-view');
         const subjectsListEl = page.querySelector('#subjects-list');
@@ -850,6 +1265,10 @@ class App {
         const gradeModal = page.querySelector('#grade-modal');
         const taskModal = page.querySelector('#task-modal');
 
+        const gradeForm = page.querySelector('#grade-form');
+        const percentagesContainer = page.querySelector('.percentages-container');
+        const percentageError = page.querySelector('#percentage-total-error');
+
         // --- View Management ---
         const showListView = () => {
             detailView.style.display = 'none';
@@ -865,8 +1284,6 @@ class App {
             renderSubjectDetails();
         };
 
-        backBtn.addEventListener('click', showListView);
-
         // --- Subject CRUD ---
         const renderSubjects = () => {
             subjectsListEl.innerHTML = subjects.map(s => `
@@ -877,47 +1294,122 @@ class App {
             `).join('') || '<p>Aún no has añadido ninguna materia.</p>';
         };
 
-        addSubjectBtn.addEventListener('click', () => {
-            subjectForm.reset();
-            subjectForm.querySelector('#subject-id').value = '';
-            subjectModal.style.display = 'flex';
-        });
+        if (!page.dataset.listenersAttached) {
+            page.dataset.listenersAttached = 'true';
 
-        subjectModal.querySelector('.close-btn').onclick = () => subjectModal.style.display = 'none';
+            backBtn.addEventListener('click', showListView);
 
-        subjectForm.addEventListener('submit', e => {
-            e.preventDefault();
-            const name = subjectForm.querySelector('#subject-name-input').value.trim();
-            if (!name) return;
-            
-            const newSubject = {
-                id: Date.now(),
-                name: name,
-                percentages: { daily: 30, appreciation: 20, final_exam: 50 },
-                grades: [],
-                tasks: []
-            };
-            subjects.push(newSubject);
-            saveSubjects();
-            renderSubjects();
-            subjectModal.style.display = 'none';
-        });
+            addSubjectBtn.addEventListener('click', () => {
+                subjectForm.reset();
+                subjectForm.querySelector('#subject-id').value = '';
+                subjectModal.style.display = 'flex';
+            });
 
-        subjectsListEl.addEventListener('click', e => {
-            const card = e.target.closest('.subject-card');
-            if (!card) return;
-            const id = card.dataset.id;
-            if (e.target.closest('.delete-subject-btn')) {
-                e.stopPropagation();
-                if (confirm('¿Eliminar esta materia y todos sus datos?')) {
-                    subjects = subjects.filter(s => s.id != id);
-                    saveSubjects();
-                    renderSubjects();
+            subjectModal.querySelector('.close-btn').onclick = () => subjectModal.style.display = 'none';
+
+            subjectForm.addEventListener('submit', e => {
+                e.preventDefault();
+                const name = subjectForm.querySelector('#subject-name-input').value.trim();
+                if (!name) return;
+                
+                const newSubject = { // Default structure for a new subject
+                    id: Date.now(),
+                    name: name,
+                    percentages: { daily: 30, appreciation: 20, final_exam: 50 },
+                    grades: [],
+                    tasks: []
+                };
+                subjects.push(newSubject);
+                saveSubjects();
+                renderSubjects();
+                subjectModal.style.display = 'none';
+            });
+
+            subjectsListEl.addEventListener('click', e => {
+                const card = e.target.closest('.subject-card');
+                if (!card) return;
+                const id = card.dataset.id;
+                if (e.target.closest('.delete-subject-btn')) {
+                    e.stopPropagation();
+                    if (confirm('¿Eliminar esta materia y todos sus datos?')) {
+                        subjects = subjects.filter(s => s.id != id);
+                        saveSubjects();
+                        renderSubjects();
+                    }
+                } else {
+                    showDetailView(id);
                 }
-            } else {
-                showDetailView(id);
-            }
-        });
+            });
+
+            percentagesContainer.addEventListener('input', e => {
+                if (e.target.classList.contains('percentage-input')) {
+                    const subject = subjects.find(s => s.id == currentSubjectId);
+                    if (!subject) return;
+                    subject.percentages[e.target.dataset.category] = parseInt(e.target.value) || 0;
+                    validatePercentages(subject);
+                    calculateAverages(subject); // Recalculate final average on percentage change
+                    saveSubjects();
+                }
+            });
+
+            addGradeBtn.addEventListener('click', () => {
+                gradeForm.reset();
+                gradeForm.querySelector('#grade-id').value = '';
+                gradeModal.style.display = 'flex';
+            });
+
+            gradeModal.querySelector('.close-btn').onclick = () => gradeModal.style.display = 'none';
+
+            gradeForm.addEventListener('submit', e => {
+                e.preventDefault();
+                const subject = subjects.find(s => s.id == currentSubjectId);
+                if (!subject) return;
+
+                const id = gradeForm.querySelector('#grade-id').value;
+                const gradeData = {
+                    title: gradeForm.querySelector('#grade-title-input').value,
+                    value: parseFloat(gradeForm.querySelector('#grade-value-input').value),
+                    category: gradeForm.querySelector('#grade-category-select').value,
+                };
+
+                if (id) { // Editing
+                    const index = subject.grades.findIndex(g => g.id == id);
+                    subject.grades[index] = { ...subject.grades[index], ...gradeData };
+                } else { // Creating
+                    gradeData.id = Date.now();
+                    subject.grades.push(gradeData);
+                }
+                saveSubjects();
+                renderGrades(subject);
+                gradeModal.style.display = 'none';
+            });
+
+            gradesListEl.addEventListener('click', e => {
+                const row = e.target.closest('tr');
+                if (!row || !row.dataset.id) return; // Make sure it's a data row
+                const gradeId = row.dataset.id;
+                const subject = subjects.find(s => s.id == currentSubjectId);
+
+                if (e.target.closest('.delete-grade-btn')) {
+                    subject.grades = subject.grades.filter(g => g.id != gradeId);
+                    saveSubjects();
+                    renderGrades(subject);
+                } else if (e.target.closest('.edit-grade-btn')) {
+                    const grade = subject.grades.find(g => g.id == gradeId);
+                    if (grade) {
+                        gradeForm.reset();
+                        gradeForm.querySelector('#grade-id').value = grade.id;
+                        gradeForm.querySelector('#grade-title-input').value = grade.title;
+                        gradeForm.querySelector('#grade-value-input').value = grade.value;
+                        gradeForm.querySelector('#grade-category-select').value = grade.category;
+                        gradeModal.style.display = 'flex';
+                    }
+                }
+            });
+
+            addTaskBtn.addEventListener('click', () => taskModal.style.display = 'flex');
+            taskModal.querySelector('.close-btn').onclick = () => taskModal.style.display = 'none';
+        }
 
         // --- Detail View Logic ---
         const renderSubjectDetails = () => {
@@ -926,22 +1418,50 @@ class App {
                 showListView();
                 return;
             }
+            // Populate view with current subject data
             page.querySelector('#subject-title').textContent = subject.name;
+            percentagesContainer.querySelectorAll('.percentage-input').forEach(input => {
+                input.value = subject.percentages[input.dataset.category];
+            });
+            validatePercentages(subject);
+
             renderGrades(subject);
             renderTasks(subject);
         };
 
         // --- Grades Logic ---
         const renderGrades = (subject) => {
-            // Render list of grades
-            gradesListEl.innerHTML = subject.grades.map(g => `
-                <div class="card" data-id="${g.id}">
-                    <div class="card-content">${g.title}: ${g.value} (${g.category})</div>
-                    <div class="card-actions">
-                        <button class="delete-grade-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
-                    </div>
-                </div>
-            `).join('');
+            if (subject.grades.length === 0) {
+                gradesListEl.innerHTML = '<p>No hay calificaciones añadidas.</p>';
+            } else {
+                gradesListEl.innerHTML = `
+                    <table class="grades-table">
+                        <thead>
+                            <tr>
+                                <th>Título</th>
+                                <th>Nota</th>
+                                <th>Categoría</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${subject.grades.map(g => `
+                                <tr data-id="${g.id}">
+                                    <td>${g.title}</td>
+                                    <td>${g.value}</td>
+                                    <td>${g.category}</td>
+                                    <td>
+                                        <div class="card-actions">
+                                            <button class="edit-grade-btn control-btn">Editar</button>
+                                            <button class="delete-grade-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
             calculateAverages(subject);
         };
 
@@ -957,15 +1477,18 @@ class App {
             let finalAverage = 0;
             for (const cat in averages) {
                 const avg = counts[cat] > 0 ? (averages[cat] / counts[cat]) : 0;
-                gradesTab.querySelector(`#avg-${cat}`).textContent = avg.toFixed(2);
-                const percentage = subject.percentages[cat] / 100;
+                detailView.querySelector(`#avg-${cat}`).textContent = avg.toFixed(2);
+                const percentage = (subject.percentages[cat] || 0) / 100;
                 finalAverage += avg * percentage;
             }
-            gradesTab.querySelector('#avg-final').textContent = finalAverage.toFixed(2);
+            detailView.querySelector('#avg-final').textContent = finalAverage.toFixed(2);
         };
 
-        addGradeBtn.addEventListener('click', () => gradeModal.style.display = 'flex');
-        gradeModal.querySelector('.close-btn').onclick = () => gradeModal.style.display = 'none';
+        const validatePercentages = (subject) => {
+            const total = Object.values(subject.percentages).reduce((sum, val) => sum + Number(val), 0);
+            percentageError.style.display = total !== 100 ? 'block' : 'none';
+            return total === 100;
+        };
 
         // --- Tasks Logic ---
         const renderTasks = (subject) => {
@@ -991,20 +1514,19 @@ class App {
                     </div>
                 `;
             }).join('');
-        };
-
-        addTaskBtn.addEventListener('click', () => taskModal.style.display = 'flex');
-        taskModal.querySelector('.close-btn').onclick = () => taskModal.style.display = 'none';
+        }; // Task logic for this section can be expanded similarly to the global tasks page
 
         // Initial call
         showListView();
     };
 
     const initTareasPage = () => {
+        const page = document.getElementById('page-tareas');
+        if (!page) return;
+
         let tasks = JSON.parse(localStorage.getItem('globalTasks')) || [];
         const save = () => localStorage.setItem('globalTasks', JSON.stringify(tasks));
 
-        const page = document.getElementById('page-tareas');
         const taskListEl = page.querySelector('#global-tasks-list');
         const modal = page.querySelector('#global-task-modal');
         const form = page.querySelector('#global-task-form');
@@ -1108,6 +1630,8 @@ class App {
 
     const initCalendarioPage = () => {
         const page = document.getElementById('page-calendario');
+        if (!page) return;
+
         const monthYearDisplay = page.querySelector('#month-year-display');
         const grid = page.querySelector('#calendar-grid');
         const detailModal = page.querySelector('#day-detail-modal');
@@ -1162,7 +1686,7 @@ class App {
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayEl = document.createElement('div');
                 dayEl.classList.add('calendar-day');
-                const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dateString = `${year}-${String(month + 1).padStart(2, 0)}-${String(day).padStart(2, 0)}`;
                 
                 if (activityData.has(dateString)) {
                     dayEl.classList.add('has-activity');
@@ -1196,36 +1720,89 @@ class App {
 
         // --- Marcadores de posición para futuras páginas ---
         const initAlimentacionPage = () => {
+            const page = document.getElementById('page-alimentacion');
+            if (!page) return;
+
             let foodLog = JSON.parse(localStorage.getItem('foodLog')) || [];
             const save = () => localStorage.setItem('foodLog', JSON.stringify(foodLog));
 
-            const page = document.getElementById('page-alimentacion');
             const grid = page.querySelector('#food-log-grid');
             const modal = page.querySelector('#food-entry-modal');
             const form = page.querySelector('#food-entry-form');
             const preview = page.querySelector('#image-preview');
             const imageInput = page.querySelector('#food-entry-image');
-            const dateFilter = page.querySelector('#food-date-filter');
+            const weekPicker = page.querySelector('#week-picker');
+            const weekDisplay = page.querySelector('#week-display');
+            const clearFilterBtn = page.querySelector('#clear-food-filter-btn');
 
-            const render = (entries = foodLog) => {
-                grid.innerHTML = entries.map(entry => `
-                    <div class="drawing-card" data-id="${entry.id}">
-                        ${entry.imageBase64 ? `<img src="${entry.imageBase64}" alt="Comida">` : ''}
-                        <div class="drawing-card-content">
-                            <p>${entry.note}</p>
-                            <small>${new Date(entry.date).toLocaleDateString()}</small>
-                        </div>
-                        <button class="delete-food-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
-                    </div>
-                `).join('') || '<p>No hay registros para la fecha seleccionada.</p>';
+            const getWeekRange = (date) => {
+                const d = new Date(date);
+                const day = d.getDay();
+                const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+                const startOfWeek = new Date(d.setDate(diff));
+                const endOfWeek = new Date(startOfWeek);
+                endOfWeek.setDate(startOfWeek.getDate() + 6);
+                return { start: startOfWeek, end: endOfWeek };
             };
+
+            const render = (entries) => {
+                const groupedByDay = entries.reduce((acc, entry) => {
+                    const date = new Date(entry.date).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                    if (!acc[date]) {
+                        acc[date] = [];
+                    }
+                    acc[date].push(entry);
+                    return acc;
+                }, {});
+
+                grid.innerHTML = Object.keys(groupedByDay).map(day => `
+                    <div class="day-group">
+                        <h3>${day}</h3>
+                        <div class="food-entries">
+                            ${groupedByDay[day].map(entry => `
+                                <div class="drawing-card" data-id="${entry.id}">
+                                    ${entry.imageBase64 ? `<img src="${entry.imageBase64}" alt="Comida">` : ''}
+                                    <div class="drawing-card-content">
+                                        <p>${entry.note}</p>
+                                        <small>${new Date(entry.date).toLocaleTimeString()}</small>
+                                    </div>
+                                    <button class="delete-food-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('') || '<p>No hay registros para la semana seleccionada.</p>';
+            };
+
+            const filterAndRender = () => {
+                const selectedDate = weekPicker.value ? new Date(weekPicker.value) : new Date();
+                const week = getWeekRange(selectedDate);
+                weekDisplay.textContent = `Semana del ${week.start.toLocaleDateString()} al ${week.end.toLocaleDateString()}`;
+
+                const filtered = foodLog.filter(entry => {
+                    const entryDate = new Date(entry.date);
+                    return entryDate >= week.start && entryDate <= week.end;
+                });
+                render(filtered);
+            };
+
+            if (weekPicker) {
+                weekPicker.addEventListener('change', filterAndRender);
+            }
+            if (clearFilterBtn) {
+                clearFilterBtn.addEventListener('click', () => {
+                    if (weekPicker) {
+                        weekPicker.value = '';
+                    }
+                    filterAndRender();
+                });
+            }
 
             page.querySelector('#add-food-entry-btn').addEventListener('click', () => {
                 form.reset();
                 form.querySelector('#food-entry-id').value = '';
                 preview.style.display = 'none';
                 preview.src = '';
-                // Set current date in modal
                 form.querySelector('#food-entry-date').valueAsDate = new Date();
                 modal.style.display = 'flex';
             });
@@ -1269,23 +1846,7 @@ class App {
                 }
             });
 
-            const filterAndRender = () => {
-                const filterDate = dateFilter.value;
-                if (filterDate) {
-                    const filtered = foodLog.filter(entry => entry.date === filterDate);
-                    render(filtered);
-                } else {
-                    render();
-                }
-            };
-
-            dateFilter.addEventListener('input', filterAndRender);
-            page.querySelector('#clear-food-filter-btn').addEventListener('click', () => {
-                dateFilter.value = '';
-                render();
-            });
-
-            render(); // Initial render
+            filterAndRender();
         };
 
         // --- 2. Lógica de Navegación y Carga de Páginas ---
@@ -1325,17 +1886,21 @@ class App {
 
         // --- 3. Lógica del Sidebar Responsivo ---
 
-        menuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('open');
-        });
+        if (menuToggle && sidebar) {
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+        }
 
-        sidebar.addEventListener('click', (e) => {
-            if (e.target.tagName === 'A' || e.target.closest('a')) {
-                if (window.innerWidth <= 768) {
-                    sidebar.classList.remove('open');
+        if (sidebar) {
+            sidebar.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A' || e.target.closest('a')) {
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('open');
+                    }
                 }
-            }
-        });
+            });
+        }
 
         // --- 4. Helpers Globales y Lógica de Inicialización ---
         const validateForm = (form) => {
@@ -1369,7 +1934,11 @@ class App {
         applySettings(); // Aplicar tema y color al cargar la app
 
         // Cargar página según el hash o la primera por defecto
-        const initialPage = window.location.hash.substring(1) || 'ejercicio';
+        const path = window.location.pathname;
+        const pageName = path.substring(path.lastIndexOf('/') + 1).replace('.html', '');
+        const validPages = ['ajustes', 'alimentacion', 'dibujo', 'ejercicio', 'horarios', 'ingles', 'notas', 'tareas', 'calendario'];
+        const hashPage = window.location.hash.substring(1);
+        const initialPage = hashPage || (validPages.includes(pageName) ? pageName : 'horarios');
         showPage(initialPage);
 
         // Navegación con los links del sidebar

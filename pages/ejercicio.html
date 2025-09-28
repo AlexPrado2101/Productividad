@@ -23,6 +23,10 @@
                  <h2 id="current-routine-name">Selecciona una rutina para empezar</h2>
                  <select id="routine-selector"></select>
             </div>
+            <div class="form-group">
+                <label for="rest-time-input">Tiempo de descanso (segundos):</label>
+                <input type="number" id="rest-time-input" value="180" min="1">
+            </div>
         </div>
 
         <div id="routine-display">
@@ -32,7 +36,7 @@
         <div id="rest-timer-wrapper" class="rest-timer-wrapper" style="display: none;">
             <div class="rest-timer-content">
                 <h3>Descanso</h3>
-                <span id="rest-timer" class="timer-display">01:30</span>
+                <span id="rest-timer" class="timer-display">03:00</span>
                 <button id="skip-rest-btn" class="control-btn">Saltar</button>
             </div>
         </div>

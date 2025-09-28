@@ -1,11 +1,27 @@
 <h1>Bitácora de Dibujo</h1>
 
-<div id="drawing-log-container">
-    <div class="toolbar">
-        <button id="add-drawing-btn" class="control-btn"><span class="material-icons">add</span> Añadir Dibujo</button>
-    </div>
-    <div id="drawing-log-grid"></div>
+<div class="tab-switcher">
+    <button class="tab-btn active" data-tab="mis-dibujos">Mis Dibujos</button>
+    <button class="tab-btn" data-tab="inspiracion">Inspiración</button>
 </div>
+
+<div id="mis-dibujos-tab-content" class="tab-content active">
+    <div id="drawing-log-container">
+        <div class="toolbar">
+            <button id="add-drawing-btn" class="control-btn"><span class="material-icons">add</span> Añadir Dibujo</button>
+        </div>
+        <div id="drawing-gallery"></div>
+    </div>
+</div>
+
+<div id="inspiracion-tab-content" class="tab-content">
+    <div class="toolbar">
+        <button id="add-inspiration-btn" class="control-btn"><span class="material-icons">add</span> Añadir Inspiración</button>
+    </div>
+    <div id="inspiration-gallery"></div>
+</div>
+
+
 
 <!-- Modal para nuevo dibujo -->
 <div id="drawing-modal" class="modal">
@@ -22,6 +38,27 @@
                 <label for="drawing-image">Adjuntar Dibujo:</label>
                 <input type="file" id="drawing-image" accept="image/*" required>
                 <img id="drawing-preview" src="" alt="Previsualización" style="max-width: 100%; max-height: 200px; margin-top: 10px; display: none;">
+            </div>
+            <button type="submit" class="control-btn">Guardar</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal para nueva inspiración -->
+<div id="inspiration-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h3>Nueva Inspiración</h3>
+        <form id="inspiration-form">
+            <input type="hidden" id="inspiration-id">
+            <div class="form-group">
+                <label for="inspiration-name">Nombre:</label>
+                <input type="text" id="inspiration-name" placeholder="Nombre de la imagen" required>
+            </div>
+            <div class="form-group">
+                <label for="inspiration-image">Adjuntar Imagen:</label>
+                <input type="file" id="inspiration-image" accept="image/*" required>
+                <img id="inspiration-preview" src="" alt="Previsualización" style="max-width: 100%; max-height: 200px; margin-top: 10px; display: none;">
             </div>
             <button type="submit" class="control-btn">Guardar</button>
         </form>

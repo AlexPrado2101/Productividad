@@ -101,38 +101,45 @@
                     </div>
 
                     <div class="toolbar">
-                        <div class="form-group">
-                            <label for="schedule-interval-select">Intervalo de tiempo (min):</label>
-                            <select id="schedule-interval-select">
-                                <option value="15">15</option>
-                                <option value="30">30</option>
-                                <option value="45">45</option>
-                                <option value="60" selected>60</option>
-                            </select>
-                        </div>
-                    </div>
-                
-                    <div class="toolbar">
                         <div class="schedule-edits">
                             <button id="add-row-btn">+ Fila</button>
                             <button id="add-col-btn">+ Columna</button>
                             <button id="remove-row-btn">- Fila</button>
                             <button id="remove-col-btn">- Columna</button>
-                        </div>
-                        <div class="schedule-autogen">
-                            <label for="autogen-hours-select">Autogenerar:</label>
-                            <select id="autogen-hours-select">
-                                <option value="8">8 horas</option>
-                                <option value="6">6 horas</option>
-                                <option value="4">4 horas</option>
-                                <option value="2">2 horas</option>
-                            </select>
-                            <button id="autogen-btn" class="control-btn"><span class="material-icons-outlined">auto_awesome</span>Generar</button>
+                            <button id="autogen-modal-btn" class="control-btn"><span class="material-icons-outlined">auto_awesome</span>Autogenerar</button>
                         </div>
                     </div>
                 
                     <div id="schedule-grid-wrapper">
                         <table id="schedule-table"></table>
+                    </div>
+                </div>
+
+                <!-- Modal para Autogenerar Horario -->
+                <div id="autogen-schedule-modal" class="modal">
+                    <div class="modal-content">
+                        <span class="close-btn">&times;</span>
+                        <h3>Autogenerar Horario</h3>
+                        <form id="autogen-schedule-form">
+                            <div class="form-group">
+                                <label for="autogen-start-time">Hora de inicio:</label>
+                                <input type="time" id="autogen-start-time" step="900" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="autogen-end-time">Hora de finalización:</label>
+                                <input type="time" id="autogen-end-time" step="900" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="autogen-interval">Intervalo (minutos):</label>
+                                <select id="autogen-interval">
+                                    <option value="15">15</option>
+                                    <option value="30">30</option>
+                                    <option value="45">45</option>
+                                    <option value="60" selected>60</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="control-btn">Aceptar</button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -228,7 +235,7 @@
                                     <div class="flashcard-back"></div>
                                 </div>
                             </div>
-                            <div class="flashcard-nav"><button id="prev-flashcard-btn" class="control-btn">Anterior</button><button id="next-flashcard-btn" class="control-btn">Siguiente</button></div>
+                            <div class="flashcard-nav"><button id="prev-flashcard-btn" class="control-btn">Anterior</button><button id="next-flashcard-btn" class="control-btn">Siguiente</button><button id="exit-flashcards-btn" class="control-btn">Salir</button></div>
                         </div>
                         <div id="vocab-list"></div>
                     </div>
@@ -249,26 +256,86 @@
                 <!-- Modales para Inglés -->
                 <div id="vocab-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Nueva Palabra</h3><form id="vocab-form"><input type="hidden" name="id"><input type="text" placeholder="Palabra o Frase" id="vocab-term" required><input type="text" placeholder="Traducción" id="vocab-translation" required><textarea placeholder="Frase de ejemplo" id="vocab-example"></textarea><button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button></form></div></div>
                 <div id="grammar-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Nueva Regla Gramatical</h3><form id="grammar-form"><input type="hidden" name="id"><input type="text" placeholder="Título de la Regla" id="grammar-title" required><textarea placeholder="Descripción y ejemplos" id="grammar-description" required></textarea><button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button></form></div></div>
-                <div id="resource-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Subir Recurso</h3><form id="resource-form"><input type="hidden" name="id"><input type="text" placeholder="Nombre del Recurso" id="resource-name" required><input type="file" id="resource-file" required><button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button></form></div></div>
+                <div id="resource-modal" class="modal">
+                    <div class="modal-content">
+                        <span class="close-btn">&times;</span>
+                        <h3>Añadir Recurso</h3>
+                        <form id="resource-form">
+                            <input type="hidden" name="id">
+                            <div class="form-group">
+                                <label for="resource-name">Nombre del Recurso</label>
+                                <input type="text" placeholder="Nombre del Recurso" id="resource-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Tipo de Recurso</label>
+                                <div class="radio-group" style="display: flex; gap: 1rem;">
+                                    <label style="display: flex; align-items: center; gap: 0.5rem;"><input type="radio" name="resource-type" value="file" checked> Archivo</label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem;"><input type="radio" name="resource-type" value="link"> Enlace (URL)</label>
+                                </div>
+                            </div>
+                            <div class="form-group" id="resource-file-group">
+                                <label for="resource-file">Archivo</label>
+                                <input type="file" id="resource-file">
+                            </div>
+                            <div class="form-group" id="resource-link-group" style="display: none;">
+                                <label for="resource-link">Enlace (URL)</label>
+                                <input type="url" placeholder="https://example.com" id="resource-link">
+                            </div>
+                            <button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button>
+                        </form>
+                    </div>
+                </div>
             </div>
 
             <!-- Página: Dibujo -->
             <div id="page-dibujo" class="page-wrapper" style="display: none;">
                 <h1>Bitácora de Dibujo</h1>
-                <div id="drawing-log-container">
+                <div class="tab-switcher">
+                    <button class="tab-btn active" data-tab="drawing-log">Bitácora</button>
+                    <button class="tab-btn" data-tab="inspiration">Inspiración</button>
+                </div>
+
+                <!-- Contenido de Pestaña: Bitácora -->
+                <div id="drawing-log-tab-content" class="tab-content active">
                     <div class="toolbar">
                         <button id="add-drawing-btn" class="control-btn"><span class="material-icons-outlined">add</span> Nueva Entrada</button>
                     </div>
-                    <div id="drawing-gallery">
-                        <!-- Las tarjetas de dibujo se renderizarán aquí -->
-                    </div>
+                    <div id="drawing-gallery"></div>
                 </div>
 
-                <!-- Modal para Dibujo -->
+                <!-- Contenido de Pestaña: Inspiración -->
+                <div id="inspiration-tab-content" class="tab-content">
+                    <div class="toolbar">
+                        <button id="add-inspiration-btn" class="control-btn"><span class="material-icons-outlined">add</span> Añadir Inspiración</button>
+                    </div>
+                    <div id="inspiration-gallery"></div>
+                </div>
+
+                <!-- Modal para Bitácora de Dibujo -->
                 <div id="drawing-modal" class="modal">
                     <div class="modal-content">
                         <span class="close-btn">&times;</span>
-                        <h3>Nueva Entrada de Dibujo</h3><form id="drawing-form"><input type="hidden" id="drawing-id"><div class="form-group"><label for="drawing-desc">Descripción:</label><textarea id="drawing-desc" required></textarea></div><div class="form-group"><label for="drawing-image">Adjuntar Imagen:</label><input type="file" id="drawing-image" accept="image/*" required><img id="drawing-preview" src="" alt="Previsualización" style="max-width: 100%; max-height: 200px; margin-top: 10px; display: none;"></div><button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button></form>
+                        <h3>Nueva Entrada de Dibujo</h3>
+                        <form id="drawing-form">
+                            <input type="hidden" id="drawing-id">
+                            <div class="form-group"><label for="drawing-desc">Descripción:</label><textarea id="drawing-desc" required></textarea></div>
+                            <div class="form-group"><label for="drawing-image">Adjuntar Imagen:</label><input type="file" id="drawing-image" accept="image/*" required><img id="drawing-preview" src="" alt="Previsualización" style="max-width: 100%; max-height: 200px; margin-top: 10px; display: none;"></div>
+                            <button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Modal para Inspiración -->
+                <div id="inspiration-modal" class="modal">
+                    <div class="modal-content">
+                        <span class="close-btn">&times;</span>
+                        <h3>Añadir Inspiración</h3>
+                        <form id="inspiration-form">
+                            <input type="hidden" id="inspiration-id">
+                            <div class="form-group"><label for="inspiration-name">Nombre/Referencia:</label><input type="text" id="inspiration-name" required></div>
+                            <div class="form-group"><label for="inspiration-image">Adjuntar Imagen:</label><input type="file" id="inspiration-image" accept="image/*" required><img id="inspiration-preview" src="" alt="Previsualización" style="max-width: 100%; max-height: 200px; margin-top: 10px; display: none;"></div>
+                            <button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -417,7 +484,41 @@
                     <div class="setting-card">
                         <h2>Color de Acento</h2>
                         <p>Selecciona el color para los elementos activos y destacados.</p>
-                        <div class="color-palette" id="accent-color-palette"><div class="color-box" style="background-color: rgb(52, 152, 219);" title="Azul claro"></div><div class="color-box" style="background-color: rgb(155, 89, 182);" title="Morado"></div><div class="color-box" style="background-color: rgb(233, 30, 99);" title="Rosado"></div><div class="color-box" style="background-color: rgb(231, 76, 60);" title="Rojo"></div><div class="color-box" style="background-color: rgb(46, 204, 113);" title="Verde"></div><div class="color-box" style="background-color: rgb(241, 196, 15);" title="Amarillo"></div><div class="color-box" style="background-color: rgb(0, 0, 0);" title="Negro"></div><div class="color-box" style="background-color: rgb(255, 255, 255);" title="Blanco"></div></div>
+                        <div class="color-palette" id="accent-color-palette">
+                            <div class="color-box" style="background-color: rgb(52, 152, 219);" title="Azul claro"></div>
+                            <div class="color-box" style="background-color: rgb(155, 89, 182);" title="Morado"></div>
+                            <div class="color-box" style="background-color: rgb(233, 30, 99);" title="Rosado"></div>
+                            <div class="color-box" style="background-color: rgb(231, 76, 60);" title="Rojo"></div>
+                            <div class="color-box" style="background-color: rgb(46, 204, 113);" title="Verde"></div>
+                            <div class="color-box" style="background-color: rgb(241, 196, 15);" title="Amarillo"></div>
+                            <div class="color-box" style="background-color: rgb(0, 0, 0);" title="Negro"></div>
+                            <div class="color-box" style="background-color: rgb(255, 255, 255);" title="Blanco"></div>
+                        </div>
+                        <div class="accent-color-btns" id="accent-color-btns">
+                            <button class="accent-color-btn" data-color="#4D6473" title="#4D6473"></button>
+                            <button class="accent-color-btn" data-color="#2C4657" title="#2C4657"></button>
+                            <button class="accent-color-btn" data-color="#172531" title="#172531"></button>
+                            <button class="accent-color-btn" data-color="#000101" title="#000101"></button>
+                            <button class="accent-color-btn" data-color="#C7843B" title="#C7843B"></button>
+                            <button class="accent-color-btn" data-color="#F38D68" title="#F38D68"></button>
+                            <button class="accent-color-btn" data-color="#181A2F" title="#181A2F"></button>
+                            <button class="accent-color-btn" data-color="#242E49" title="#242E49"></button>
+                            <button class="accent-color-btn" data-color="#37415C" title="#37415C"></button>
+                            <button class="accent-color-btn" data-color="#FDA481" title="#FDA481"></button>
+                            <button class="accent-color-btn" data-color="#B4182D" title="#B4182D"></button>
+                            <button class="accent-color-btn" data-color="#54162B" title="#54162B"></button>
+                            <button class="accent-color-btn" data-color="#150016" title="#150016"></button>
+                            <button class="accent-color-btn" data-color="#29104A" title="#29104A"></button>
+                            <button class="accent-color-btn" data-color="#522C5D" title="#522C5D"></button>
+                            <button class="accent-color-btn" data-color="#845162" title="#845162"></button>
+                            <button class="accent-color-btn" data-color="#E3B6B1" title="#E3B6B1"></button>
+                            <button class="accent-color-btn" data-color="#F7F3D8" title="#F7F3D8"></button>
+                            <button class="accent-color-btn" data-color="#3B2869" title="#3B2869"></button>
+                            <button class="accent-color-btn" data-color="#4F4698" title="#4F4698"></button>
+                            <button class="accent-color-btn" data-color="#3B82C4" title="#3B82C4"></button>
+                            <button class="accent-color-btn" data-color="#ABBBE5" title="#ABBBE5"></button>
+                            <button class="accent-color-btn" data-color="#CFFBF6" title="#CFFBF6"></button>
+                        </div>
                     </div>
                 
                     <!-- Card para Gestión de Datos -->
@@ -428,6 +529,42 @@
                             <button id="export-data-btn" class="control-btn"><span class="material-icons-outlined">file_download</span> Exportar Datos</button>
                             <label for="import-data-input" class="control-btn"><span class="material-icons-outlined">file_upload</span> Importar Datos</label>
                             <input type="file" id="import-data-input" accept=".zip" style="display: none;">
+                        </div>
+                    </div>
+
+                    <!-- Card para Fondo de Pantalla -->
+                    <div class="setting-card">
+                        <h2>Fondo de Pantalla</h2>
+                        <p>Selecciona una imagen o color para personalizar el fondo de la aplicación.</p>
+                        <div class="data-management-actions">
+                            <label for="background-image-input" class="control-btn"><span class="material-icons-outlined">image</span> Seleccionar Imagen</label>
+                            <input type="file" id="background-image-input" accept="image/*" style="display: none;">
+                            <button id="remove-background-btn" class="control-btn remove-btn"><span class="material-icons-outlined">delete</span> Quitar Fondo</button>
+                        </div>
+                        <div class="bg-color-btns" id="bg-color-btns">
+                            <button class="bg-color-btn" data-color="#4D6473" title="#4D6473"></button>
+                            <button class="bg-color-btn" data-color="#2C4657" title="#2C4657"></button>
+                            <button class="bg-color-btn" data-color="#172531" title="#172531"></button>
+                            <button class="bg-color-btn" data-color="#000101" title="#000101"></button>
+                            <button class="bg-color-btn" data-color="#C7843B" title="#C7843B"></button>
+                            <button class="bg-color-btn" data-color="#F38D68" title="#F38D68"></button>
+                            <button class="bg-color-btn" data-color="#181A2F" title="#181A2F"></button>
+                            <button class="bg-color-btn" data-color="#242E49" title="#242E49"></button>
+                            <button class="bg-color-btn" data-color="#37415C" title="#37415C"></button>
+                            <button class="bg-color-btn" data-color="#FDA481" title="#FDA481"></button>
+                            <button class="bg-color-btn" data-color="#B4182D" title="#B4182D"></button>
+                            <button class="bg-color-btn" data-color="#54162B" title="#54162B"></button>
+                            <button class="bg-color-btn" data-color="#150016" title="#150016"></button>
+                            <button class="bg-color-btn" data-color="#29104A" title="#29104A"></button>
+                            <button class="bg-color-btn" data-color="#522C5D" title="#522C5D"></button>
+                            <button class="bg-color-btn" data-color="#845162" title="#845162"></button>
+                            <button class="bg-color-btn" data-color="#E3B6B1" title="#E3B6B1"></button>
+                            <button class="bg-color-btn" data-color="#F7F3D8" title="#F7F3D8"></button>
+                            <button class="bg-color-btn" data-color="#3B2869" title="#3B2869"></button>
+                            <button class="bg-color-btn" data-color="#4F4698" title="#4F4698"></button>
+                            <button class="bg-color-btn" data-color="#3B82C4" title="#3B82C4"></button>
+                            <button class="bg-color-btn" data-color="#ABBBE5" title="#ABBBE5"></button>
+                            <button class="bg-color-btn" data-color="#CFFBF6" title="#CFFBF6"></button>
                         </div>
                     </div>
 

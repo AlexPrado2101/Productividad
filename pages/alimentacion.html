@@ -4,10 +4,12 @@
     <div class="toolbar">
         <button id="add-food-entry-btn" class="control-btn"><span class="material-icons">add</span> Nuevo Registro</button>
         <div class="filters">
-            <input type="date" id="food-date-filter">
-            <button id="clear-food-filter-btn">Limpiar Filtro</button>
+            <label for="week-picker">Seleccionar semana:</label>
+            <input type="date" id="week-picker">
+            <button id="clear-food-filter-btn">Esta Semana</button>
         </div>
     </div>
+    <div id="week-display"></div>
     <div id="food-log-grid"></div>
 </div>
 

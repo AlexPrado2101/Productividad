@@ -1,1 +1,69 @@
-<h1>Lista de Tareas</h1>
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productividad App - Tareas</title>
+    <link rel="stylesheet" href="../style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Icons+Outlined" rel="stylesheet">
+    <style>
+        :root {
+            --color-1: #4D6473;
+            --color-2: #2C4657;
+            --color-3: #172531;
+            --color-4: #000101;
+            --color-5: #C7843B;
+            --color-6: #F38D68;
+            --color-7: #181A2F;
+            --color-8: #242E49;
+            --color-9: #37415C;
+            --color-10: #FDA481;
+            --color-11: #B4182D;
+            --color-12: #54162B;
+            --color-13: #150016;
+            --color-14: #29104A;
+            --color-15: #522C5D;
+            --color-16: #845162;
+            --color-17: #E3B6B1;
+            --color-18: #F7F3D8;
+            --color-19: #3B2869;
+            --color-20: #4F4698;
+            --color-21: #3B82C4;
+            --color-22: #ABBBE5;
+            --color-23: #CFFBF6;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <main id="main-content" class="main-content" style="margin-left: 0;">
+            <div id="page-tareas" class="page-wrapper" style="display: block;">
+                <h1>Lista de Tareas Global</h1>
+                <div id="global-tasks-container">
+                    <div class="toolbar">
+                        <button id="add-global-task-btn" class="control-btn"><span class="material-icons-outlined">add</span> Nueva Tarea</button>
+                    </div>
+                    <div id="global-tasks-list">
+                        <!-- La lista de tareas se renderizará aquí -->
+                    </div>
+                </div>
+                <!-- Modal para Tareas Globales -->
+                <div id="global-task-modal" class="modal">
+                    <div class="modal-content">
+                        <span class="close-btn" id="global-task-modal-close">&times;</span>
+                        <h3>Tarea Global</h3>
+                        <form id="global-task-form">
+                            <input type="hidden" id="global-task-id">
+                            <input type="text" id="global-task-title" placeholder="Título de la tarea" required>
+                            <textarea id="global-task-desc" placeholder="Descripción"></textarea>
+                            <input type="date" id="global-task-due-date" required>
+                            <button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../script.js"></script>
+</body>
+</html>
