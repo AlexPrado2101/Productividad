@@ -1264,173 +1264,60 @@ class App {
         const addTaskBtn = page.querySelector('#add-task-btn');
         const gradeModal = page.querySelector('#grade-modal');
         const taskModal = page.querySelector('#task-modal');
-
         const gradeForm = page.querySelector('#grade-form');
         const percentagesContainer = page.querySelector('.percentages-container');
         const percentageError = page.querySelector('#percentage-total-error');
 
-        // --- View Management ---
-        const showListView = () => {
-            detailView.style.display = 'none';
-            listView.style.display = 'block';
-            currentSubjectId = null;
-            renderSubjects();
-        };
+        // --- Function Declarations ---
+        const renderTasks = (subject) => {
+            if (!tasksListEl) return;
+            const now = new Date();
+            tasksListEl.innerHTML = subject.tasks.map(t => {
+                const dueDate = new Date(t.dueDate);
+                const daysDiff = (dueDate - now) / (1000 * 60 * 60 * 24);
+                let statusClass = 'status-green';
+                if (daysDiff <= 3) statusClass = 'status-red';
+                else if (daysDiff <= 7) statusClass = 'status-yellow';
 
-        const showDetailView = (subjectId) => {
-            listView.style.display = 'none';
-            detailView.style.display = 'block';
-            currentSubjectId = subjectId;
-            renderSubjectDetails();
-        };
+                return `
+                    <div class="card task-card ${statusClass} ${t.completed ? 'completed' : ''}" data-id="${t.id}">
+                        <div class="status-indicator"></div><input type="checkbox" ${t.completed ? 'checked' : ''}>
+                        <div>
+                            <h4>${t.title}</h4>
+                            <p>${t.description}</p>
+                            <small>Entrega: ${new Date(t.dueDate).toLocaleDateString()}</small>
+                        </div>
+                        <div class="card-actions">
+                            <button class="edit-academic-task-btn control-btn">Editar</button><button class="delete-academic-task-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }; 
 
-        // --- Subject CRUD ---
-        const renderSubjects = () => {
-            subjectsListEl.innerHTML = subjects.map(s => `
-                <div class="card subject-card" data-id="${s.id}">
-                    <h4>${s.name}</h4>
-                    <button class="delete-subject-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
-                </div>
-            `).join('') || '<p>Aún no has añadido ninguna materia.</p>';
-        };
-
-        if (!page.dataset.listenersAttached) {
-            page.dataset.listenersAttached = 'true';
-
-            backBtn.addEventListener('click', showListView);
-
-            addSubjectBtn.addEventListener('click', () => {
-                subjectForm.reset();
-                subjectForm.querySelector('#subject-id').value = '';
-                subjectModal.style.display = 'flex';
+        const calculateAverages = (subject) => {
+            const averages = { daily: 0, appreciation: 0, final_exam: 0 };
+            const counts = { daily: 0, appreciation: 0, final_exam: 0 };
+            
+            subject.grades.forEach(grade => {
+                averages[grade.category] += parseFloat(grade.value);
+                counts[grade.category]++;
             });
 
-            subjectModal.querySelector('.close-btn').onclick = () => subjectModal.style.display = 'none';
-
-            subjectForm.addEventListener('submit', e => {
-                e.preventDefault();
-                const name = subjectForm.querySelector('#subject-name-input').value.trim();
-                if (!name) return;
-                
-                const newSubject = { // Default structure for a new subject
-                    id: Date.now(),
-                    name: name,
-                    percentages: { daily: 30, appreciation: 20, final_exam: 50 },
-                    grades: [],
-                    tasks: []
-                };
-                subjects.push(newSubject);
-                saveSubjects();
-                renderSubjects();
-                subjectModal.style.display = 'none';
-            });
-
-            subjectsListEl.addEventListener('click', e => {
-                const card = e.target.closest('.subject-card');
-                if (!card) return;
-                const id = card.dataset.id;
-                if (e.target.closest('.delete-subject-btn')) {
-                    e.stopPropagation();
-                    if (confirm('¿Eliminar esta materia y todos sus datos?')) {
-                        subjects = subjects.filter(s => s.id != id);
-                        saveSubjects();
-                        renderSubjects();
-                    }
-                } else {
-                    showDetailView(id);
-                }
-            });
-
-            percentagesContainer.addEventListener('input', e => {
-                if (e.target.classList.contains('percentage-input')) {
-                    const subject = subjects.find(s => s.id == currentSubjectId);
-                    if (!subject) return;
-                    subject.percentages[e.target.dataset.category] = parseInt(e.target.value) || 0;
-                    validatePercentages(subject);
-                    calculateAverages(subject); // Recalculate final average on percentage change
-                    saveSubjects();
-                }
-            });
-
-            addGradeBtn.addEventListener('click', () => {
-                gradeForm.reset();
-                gradeForm.querySelector('#grade-id').value = '';
-                gradeModal.style.display = 'flex';
-            });
-
-            gradeModal.querySelector('.close-btn').onclick = () => gradeModal.style.display = 'none';
-
-            gradeForm.addEventListener('submit', e => {
-                e.preventDefault();
-                const subject = subjects.find(s => s.id == currentSubjectId);
-                if (!subject) return;
-
-                const id = gradeForm.querySelector('#grade-id').value;
-                const gradeData = {
-                    title: gradeForm.querySelector('#grade-title-input').value,
-                    value: parseFloat(gradeForm.querySelector('#grade-value-input').value),
-                    category: gradeForm.querySelector('#grade-category-select').value,
-                };
-
-                if (id) { // Editing
-                    const index = subject.grades.findIndex(g => g.id == id);
-                    subject.grades[index] = { ...subject.grades[index], ...gradeData };
-                } else { // Creating
-                    gradeData.id = Date.now();
-                    subject.grades.push(gradeData);
-                }
-                saveSubjects();
-                renderGrades(subject);
-                gradeModal.style.display = 'none';
-            });
-
-            gradesListEl.addEventListener('click', e => {
-                const row = e.target.closest('tr');
-                if (!row || !row.dataset.id) return; // Make sure it's a data row
-                const gradeId = row.dataset.id;
-                const subject = subjects.find(s => s.id == currentSubjectId);
-
-                if (e.target.closest('.delete-grade-btn')) {
-                    subject.grades = subject.grades.filter(g => g.id != gradeId);
-                    saveSubjects();
-                    renderGrades(subject);
-                } else if (e.target.closest('.edit-grade-btn')) {
-                    const grade = subject.grades.find(g => g.id == gradeId);
-                    if (grade) {
-                        gradeForm.reset();
-                        gradeForm.querySelector('#grade-id').value = grade.id;
-                        gradeForm.querySelector('#grade-title-input').value = grade.title;
-                        gradeForm.querySelector('#grade-value-input').value = grade.value;
-                        gradeForm.querySelector('#grade-category-select').value = grade.category;
-                        gradeModal.style.display = 'flex';
-                    }
-                }
-            });
-
-            addTaskBtn.addEventListener('click', () => taskModal.style.display = 'flex');
-            taskModal.querySelector('.close-btn').onclick = () => taskModal.style.display = 'none';
-        }
-
-        // --- Detail View Logic ---
-        const renderSubjectDetails = () => {
-            const subject = subjects.find(s => s.id == currentSubjectId);
-            if (!subject) {
-                showListView();
-                return;
+            let finalAverage = 0;
+            for (const cat in averages) {
+                const avg = counts[cat] > 0 ? (averages[cat] / counts[cat]) : 0;
+                const avgEl = detailView.querySelector(`#avg-${cat}`);
+                if(avgEl) avgEl.textContent = avg.toFixed(2);
+                const percentage = (subject.percentages[cat] || 0) / 100;
+                finalAverage += avg * percentage;
             }
-            // Populate view with current subject data
-            page.querySelector('#subject-title').textContent = subject.name;
-            percentagesContainer.querySelectorAll('.percentage-input').forEach(input => {
-                input.value = subject.percentages[input.dataset.category];
-            });
-            validatePercentages(subject);
-
-            renderGrades(subject);
-            renderTasks(subject);
+            const finalAvgEl = detailView.querySelector('#avg-final');
+            if(finalAvgEl) finalAvgEl.textContent = finalAverage.toFixed(2);
         };
 
-        // --- Grades Logic ---
         const renderGrades = (subject) => {
+            if (!gradesListEl) return;
             if (subject.grades.length === 0) {
                 gradesListEl.innerHTML = '<p>No hay calificaciones añadidas.</p>';
             } else {
@@ -1465,56 +1352,222 @@ class App {
             calculateAverages(subject);
         };
 
-        const calculateAverages = (subject) => {
-            const averages = { daily: 0, appreciation: 0, final_exam: 0 };
-            const counts = { daily: 0, appreciation: 0, final_exam: 0 };
-            
-            subject.grades.forEach(grade => {
-                averages[grade.category] += parseFloat(grade.value);
-                counts[grade.category]++;
-            });
-
-            let finalAverage = 0;
-            for (const cat in averages) {
-                const avg = counts[cat] > 0 ? (averages[cat] / counts[cat]) : 0;
-                detailView.querySelector(`#avg-${cat}`).textContent = avg.toFixed(2);
-                const percentage = (subject.percentages[cat] || 0) / 100;
-                finalAverage += avg * percentage;
-            }
-            detailView.querySelector('#avg-final').textContent = finalAverage.toFixed(2);
-        };
-
         const validatePercentages = (subject) => {
+            if (!percentageError) return true;
             const total = Object.values(subject.percentages).reduce((sum, val) => sum + Number(val), 0);
             percentageError.style.display = total !== 100 ? 'block' : 'none';
             return total === 100;
         };
 
-        // --- Tasks Logic ---
-        const renderTasks = (subject) => {
-            const now = new Date();
-            tasksListEl.innerHTML = subject.tasks.map(t => {
-                const dueDate = new Date(t.dueDate);
-                const daysDiff = (dueDate - now) / (1000 * 60 * 60 * 24);
-                let statusClass = 'status-green';
-                if (daysDiff <= 3) statusClass = 'status-red';
-                else if (daysDiff <= 7) statusClass = 'status-yellow';
+        const renderSubjectDetails = () => {
+            const subject = subjects.find(s => s.id == currentSubjectId);
+            if (!subject) {
+                showListView();
+                return;
+            }
+            const subjectTitle = page.querySelector('#subject-title');
+            if(subjectTitle) subjectTitle.textContent = subject.name;
+            if(percentagesContainer) {
+                percentagesContainer.querySelectorAll('.percentage-input').forEach(input => {
+                    input.value = subject.percentages[input.dataset.category];
+                });
+            }
+            validatePercentages(subject);
 
-                return `
-                    <div class="card task-card ${statusClass} ${t.completed ? 'completed' : ''}" data-id="${t.id}">
-                        <div class="status-indicator"></div><input type="checkbox" ${t.completed ? 'checked' : ''}>
-                        <div>
-                            <h4>${t.title}</h4>
-                            <p>${t.description}</p>
-                            <small>Entrega: ${new Date(t.dueDate).toLocaleDateString()}</small>
-                        </div>
-                        <div class="card-actions">
-                            <button class="edit-academic-task-btn control-btn">Editar</button><button class="delete-academic-task-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }; // Task logic for this section can be expanded similarly to the global tasks page
+            renderGrades(subject);
+            renderTasks(subject);
+        };
+
+        const renderSubjects = () => {
+            if (!subjectsListEl) return;
+            subjectsListEl.innerHTML = subjects.map(s => `
+                <div class="card subject-card" data-id="${s.id}">
+                    <h4>${s.name}</h4>
+                    <button class="delete-subject-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
+                </div>
+            `).join('') || '<p>Aún no has añadido ninguna materia.</p>';
+        };
+
+        const showListView = () => {
+            if(detailView) detailView.style.display = 'none';
+            if(listView) listView.style.display = 'block';
+            currentSubjectId = null;
+            renderSubjects();
+        };
+
+        const showDetailView = (subjectId) => {
+            if(listView) listView.style.display = 'none';
+            if(detailView) detailView.style.display = 'block';
+            currentSubjectId = subjectId;
+            renderSubjectDetails();
+        };
+
+
+        // --- Event Listeners ---
+        if (!page.dataset.listenersAttached) {
+            page.dataset.listenersAttached = 'true';
+
+            if(backBtn) backBtn.addEventListener('click', showListView);
+
+            if(addSubjectBtn) addSubjectBtn.addEventListener('click', () => {
+                if(subjectForm) subjectForm.reset();
+                if(subjectForm) subjectForm.querySelector('#subject-id').value = '';
+                if(subjectModal) subjectModal.style.display = 'flex';
+            });
+
+            if(subjectModal) subjectModal.querySelector('.close-btn').onclick = () => subjectModal.style.display = 'none';
+
+            if(subjectForm) subjectForm.addEventListener('submit', e => {
+                e.preventDefault();
+                const name = subjectForm.querySelector('#subject-name-input').value.trim();
+                if (!name) return;
+                
+                const newSubject = { 
+                    id: Date.now(),
+                    name: name,
+                    percentages: { daily: 30, appreciation: 20, final_exam: 50 },
+                    grades: [],
+                    tasks: []
+                };
+                subjects.push(newSubject);
+                saveSubjects();
+                renderSubjects();
+                if(subjectModal) subjectModal.style.display = 'none';
+            });
+
+            if(subjectsListEl) subjectsListEl.addEventListener('click', e => {
+                const card = e.target.closest('.subject-card');
+                if (!card) return;
+                const id = card.dataset.id;
+                if (e.target.closest('.delete-subject-btn')) {
+                    e.stopPropagation();
+                    if (confirm('¿Eliminar esta materia y todos sus datos?')) {
+                        subjects = subjects.filter(s => s.id != id);
+                        saveSubjects();
+                        renderSubjects();
+                    }
+                } else {
+                    showDetailView(id);
+                }
+            });
+
+            if(percentagesContainer) percentagesContainer.addEventListener('input', e => {
+                if (e.target.classList.contains('percentage-input')) {
+                    const subject = subjects.find(s => s.id == currentSubjectId);
+                    if (!subject) return;
+                    subject.percentages[e.target.dataset.category] = parseInt(e.target.value) || 0;
+                    validatePercentages(subject);
+                    calculateAverages(subject);
+                    saveSubjects();
+                }
+            });
+
+            if(addGradeBtn && gradeModal) addGradeBtn.addEventListener('click', () => {
+                if(gradeForm) gradeForm.reset();
+                if(gradeForm) gradeForm.querySelector('#grade-id').value = '';
+                const gradeValueInput = gradeModal.querySelector('#grade-value-input');
+                if(gradeValueInput) {
+                    gradeValueInput.max = "5";
+                    gradeValueInput.min = "1";
+                    gradeValueInput.step = "0.1";
+                }
+                const universityGradeBtn = gradeModal.querySelector('#university-grade-btn');
+                if(universityGradeBtn) universityGradeBtn.textContent = "Nota Universitaria";
+                gradeModal.style.display = 'flex';
+            });
+
+            if(gradeModal) {
+                const closeBtn = gradeModal.querySelector('.close-btn');
+                if(closeBtn) closeBtn.onclick = () => gradeModal.style.display = 'none';
+
+                const universityGradeBtn = gradeModal.querySelector('#university-grade-btn');
+                const gradeValueInput = gradeModal.querySelector('#grade-value-input');
+
+                if (universityGradeBtn && gradeValueInput) {
+                    universityGradeBtn.addEventListener('click', () => {
+                        if (gradeValueInput.max == "5") {
+                            gradeValueInput.max = "100";
+                            gradeValueInput.min = "0";
+                            gradeValueInput.step = "1";
+                            universityGradeBtn.textContent = "Nota Normal";
+                        } else {
+                            gradeValueInput.max = "5";
+                            gradeValueInput.min = "1";
+                            gradeValueInput.step = "0.1";
+                            universityGradeBtn.textContent = "Nota Universitaria";
+                        }
+                    });
+                }
+            }
+
+            if(gradeForm) gradeForm.addEventListener('submit', e => {
+                e.preventDefault();
+                const subject = subjects.find(s => s.id == currentSubjectId);
+                if (!subject) return;
+
+                const id = gradeForm.querySelector('#grade-id').value;
+                const gradeData = {
+                    title: gradeForm.querySelector('#grade-title-input').value,
+                    value: parseFloat(gradeForm.querySelector('#grade-value-input').value),
+                    category: gradeForm.querySelector('#grade-category-select').value,
+                };
+
+                if (id) { // Editing
+                    const index = subject.grades.findIndex(g => g.id == id);
+                    subject.grades[index] = { ...subject.grades[index], ...gradeData };
+                } else { // Creating
+                    gradeData.id = Date.now();
+                    subject.grades.push(gradeData);
+                }
+                saveSubjects();
+                renderGrades(subject);
+                if(gradeModal) gradeModal.style.display = 'none';
+            });
+
+            if(gradesListEl) gradesListEl.addEventListener('click', e => {
+                const row = e.target.closest('tr');
+                if (!row || !row.dataset.id) return;
+                const gradeId = row.dataset.id;
+                const subject = subjects.find(s => s.id == currentSubjectId);
+                if(!subject) return;
+
+                if (e.target.closest('.delete-grade-btn')) {
+                    subject.grades = subject.grades.filter(g => g.id != gradeId);
+                    saveSubjects();
+                    renderGrades(subject);
+                } else if (e.target.closest('.edit-grade-btn')) {
+                    const grade = subject.grades.find(g => g.id == gradeId);
+                    if (grade && gradeForm && gradeModal) {
+                        gradeForm.reset();
+                        gradeForm.querySelector('#grade-id').value = grade.id;
+                        gradeForm.querySelector('#grade-title-input').value = grade.title;
+                        const gradeValueInput = gradeForm.querySelector('#grade-value-input');
+                        gradeValueInput.value = grade.value;
+                        
+                        const universityGradeBtn = gradeModal.querySelector('#university-grade-btn');
+                        gradeValueInput.max = "5";
+                        gradeValueInput.min = "1";
+                        gradeValueInput.step = "0.1";
+                        if(universityGradeBtn) universityGradeBtn.textContent = "Nota Universitaria";
+                        
+                        if (grade.value > 5) {
+                            gradeValueInput.max = "100";
+                            gradeValueInput.min = "0";
+                            gradeValueInput.step = "1";
+                            if(universityGradeBtn) universityGradeBtn.textContent = "Nota Normal";
+                        }
+                        gradeForm.querySelector('#grade-category-select').value = grade.category;
+                        gradeModal.style.display = 'flex';
+                    }
+                }
+            });
+
+            if(addTaskBtn && taskModal) {
+                addTaskBtn.addEventListener('click', () => taskModal.style.display = 'flex');
+                const closeBtn = taskModal.querySelector('.close-btn');
+                if(closeBtn) closeBtn.onclick = () => taskModal.style.display = 'none';
+            }
+        }
 
         // Initial call
         showListView();
