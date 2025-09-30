@@ -257,21 +257,21 @@ class App {
                         <div class="card" data-id="${item.id}">
                             <h4>${item.term} - <i>${item.translation}</i></h4>
                             <p>${item.example}</p>
-                            <div class="card-actions"><button class="edit-btn control-btn">Editar</button><button class="delete-btn remove-btn"><span class="material-icons-outlined">delete</span></button></div>
+                            <div class="card-actions"><button class="edit-btn control-btn">Editar</button><button class="delete-btn remove-btn"><img src="Assets/icons/Borrar2.svg" alt="Eliminar" class="icon"></button></div>
                         </div>`).join('');
                 } else if (type === 'grammar') {
-                    html = data.grammar.map(item => `<div class="card" data-id="${item.id}"><h4>${item.title}</h4><p>${item.description}</p><div class="card-actions"><button class="edit-btn control-btn">Editar</button><button class="delete-btn remove-btn"><span class="material-icons-outlined">delete</span></button></div></div>`).join('');
+                    html = data.grammar.map(item => `<div class="card" data-id="${item.id}"><h4>${item.title}</h4><p>${item.description}</p><div class="card-actions"><button class="edit-btn control-btn">Editar</button><button class="delete-btn remove-btn"><img src="Assets/icons/Borrar2.svg" alt="Eliminar" class="icon"></button></div></div>`).join('');
                 } else if (type === 'resources') {
                     html = data.resources.map(item => `
                         <div class="drawing-card" data-id="${item.id}">
                             <a href="${item.fileData}" target="_blank" title="Abrir en nueva pestaña">
                                 ${item.fileData.startsWith('data:image') 
                                     ? `<img src="${item.fileData}" alt="${item.name}">` 
-                                    : `<div class="file-placeholder"><span class="material-icons-outlined">description</span></div>`
+                                    : `<div class="file-placeholder"><img src="Assets/icons/description.svg" alt="Archivo" class="icon"></div>`
                                 }
                             </a>
                             <div class="drawing-card-content"><p>${item.name}</p></div>
-                            <button class="delete-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
+                            <button class="delete-btn remove-btn"><img src="Assets/icons/borrar2.svg" alt="Eliminar" class="icon"></button>
                         </div>`).join('');
                 }
                 listEl.innerHTML = html || '<p>No hay entradas.</p>';
@@ -630,7 +630,7 @@ class App {
                             <p>${d.description.substring(0, 50)}...</p>
                             <small>${new Date(d.date).toLocaleString()}</small>
                         </div><button class="delete-drawing-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
-                    </div>
+                    </div><button class="delete-drawing-btn remove-btn"><img src="Assets/icons/Borrar2.svg" alt="Eliminar" class="icon"></button>
                 `).join('');
             };
 
@@ -703,7 +703,7 @@ class App {
                         <img src="${d.imageBase64}" alt="${d.name}">
                         <div class="drawing-card-content">
                             <p>${d.name}</p>
-                        </div><button class="delete-inspiration-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
+                        </div><button class="delete-inspiration-btn remove-btn"><img src="Assets/icons/Borrar2.svg" alt="Eliminar" class="icon"></button>
                     </div>
                 `).join('');
             };
@@ -934,14 +934,14 @@ class App {
             if (mainTimerInterval) { // Pausar
                 clearInterval(mainTimerInterval);
                 mainTimerInterval = null;
-                startPauseBtn.querySelector('span').textContent = 'play_arrow';
+                startPauseBtn.querySelector('img.icon').src = 'Assets/icons/playarrow.svg';
                 startPauseBtn.lastChild.textContent = 'Reanudar';
             } else { // Iniciar/Reanudar
                 mainTimerInterval = setInterval(() => {
                     mainTimerSeconds++;
                     updateMainTimer();
                 }, 1000);
-                startPauseBtn.querySelector('span').textContent = 'pause';
+                startPauseBtn.querySelector('img.icon').src = 'Assets/icons/stop.svg';
                 startPauseBtn.lastChild.textContent = 'Pausar';
                 endSessionBtn.disabled = false;
                 resetSessionBtn.disabled = false;
@@ -954,7 +954,7 @@ class App {
                 mainTimerInterval = null;
                 mainTimerSeconds = 0;
                 updateMainTimer();
-                startPauseBtn.querySelector('span').textContent = 'play_arrow';
+                startPauseBtn.querySelector('img.icon').src = 'Assets/icons/playarrow.svg';
                 startPauseBtn.lastChild.textContent = 'Iniciar';
                 endSessionBtn.disabled = true;
                 resetSessionBtn.disabled = true;
@@ -1007,7 +1007,7 @@ class App {
                 <div class="card" data-id="${r.id}">
                     <h4>${r.name}</h4>
                     <div class="card-actions">
-                        <button class="edit-routine-btn control-btn">Editar</button><button class="delete-routine-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
+                        <button class="edit-routine-btn control-btn">Editar</button><button class="delete-routine-btn remove-btn"><img src="Assets/icons/Borrar2.svg" alt="Eliminar" class="icon"></button>
                     </div>
                 </div>
             `).join('');
@@ -1055,7 +1055,7 @@ class App {
                 <div class="dynamic-form-group" data-group-index="${groupIndex}">
                     <div class="dynamic-form-group-header">
                         <input type="text" class="muscle-group-name" placeholder="Nombre Grupo Muscular (ej. Pecho)" value="${group.name}" required>
-                        <button type="button" class="remove-btn remove-group-btn"><span class="material-icons-outlined">delete</span></button>
+                        <button type="button" class="remove-btn remove-group-btn"><img src="Assets/icons/Borrar2.svg" alt="Eliminar grupo" class="icon"></button>
                     </div>
                     <div class="exercises-list">
                         ${(group.exercises || []).map((ex, exIndex) => `
@@ -1065,7 +1065,7 @@ class App {
                                 <input type="text" placeholder="Reps" value="${ex.reps}" required>
                                 <input type="number" placeholder="Peso (kg)" value="${ex.weight || ''}">
                                 <input type="text" placeholder="Notas" value="${ex.notes || ''}">
-                                <button type="button" class="remove-btn remove-exercise-btn"><span class="material-icons-outlined">delete</span></button>
+                                <button type="button" class="remove-btn remove-exercise-btn"><img src="Assets/icons/Borrar2.svg" alt="Eliminar ejercicio" class="icon"></button>
                             </div>
                         `).join('')}
                     </div>
@@ -1080,7 +1080,7 @@ class App {
             newGroup.innerHTML = `
                 <div class="dynamic-form-group-header">
                     <input type="text" class="muscle-group-name" placeholder="Nombre Grupo Muscular (ej. Pecho)" required>
-                    <button type="button" class="remove-btn remove-group-btn"><span class="material-icons-outlined">delete</span></button>
+                    <button type="button" class="remove-btn remove-group-btn"><img src="Assets/icons/Borrar2.svg" alt="Eliminar grupo" class="icon"></button>
                 </div>
                 <div class="exercises-list"></div>
                 <button type="button" class="control-btn add-exercise-to-group-btn">Añadir Ejercicio</button>
@@ -1099,7 +1099,7 @@ class App {
                     <input type="text" placeholder="Reps" required>
                     <input type="number" placeholder="Peso (kg)">
                     <input type="text" placeholder="Notas">
-                    <button type="button" class="remove-btn remove-exercise-btn"><span class="material-icons-outlined">delete</span></button>
+                    <button type="button" class="remove-btn remove-exercise-btn"><img src="Assets/icons/Borrar2.svg" alt="Eliminar ejercicio" class="icon"></button>
                 `;
                 list.appendChild(newExercise);
             }
@@ -1157,7 +1157,7 @@ class App {
                                         <div class="series-item">
                                             <input type="checkbox" id="serie-${ex.id}-${i}" class="series-checkbox">
                                             <label for="serie-${ex.id}-${i}">Serie ${i + 1}</label>
-                                        </div>
+                                        </div><button class="control-btn finish-exercise-btn"><img src="Assets/icons/CirculoSeleccionado.svg" alt="" class="icon">Terminar Ejercicio</button>
                                     `).join('')}</div><button class="control-btn finish-exercise-btn"><span class="material-icons-outlined">check_circle</span>Terminar Ejercicio</button>
                             </div>
                         `).join('')}
@@ -1175,7 +1175,7 @@ class App {
                             <strong>${entry.routineName}</strong> - ${new Date(entry.date).toLocaleDateString()}
                         </div>
                         <div class="card-actions">
-                            <span>Duración: ${formatTime(entry.duration)}</span><button class="delete-log-btn remove-btn" data-id="${entry.id}"><span class="material-icons-outlined">delete</span></button>
+                            <span>Duración: ${formatTime(entry.duration)}</span><button class="delete-log-btn remove-btn" data-id="${entry.id}"><img src="Assets/icons/delete.svg" alt="Eliminar" class="icon"></button>
                         </div>
                     </div>
                 </div>
@@ -1344,7 +1344,7 @@ class App {
                                     <td>
                                         <div class="card-actions">
                                             <button class="edit-grade-btn control-btn">Editar</button>
-                                            <button class="delete-grade-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
+                                            <button class="delete-grade-btn remove-btn"><img src="Assets/icons/Borrar2.svg" alt="Eliminar" class="icon"></button>
                                         </div>
                                     </td>
                                 </tr>`).join('')}
@@ -1405,7 +1405,7 @@ class App {
             subjectsListEl.innerHTML = subjects.map(s => `
                 <div class="card subject-card" data-id="${s.id}">
                     <h4>${s.name}</h4>
-                    <button class="delete-subject-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
+                    <button class="delete-subject-btn remove-btn"><img src="Assets/icons/Borrar2.svg" alt="Eliminar" class="icon"></button>
                 </div>`).join('') || '<p>Aún no has añadido ninguna materia.</p>';
         };
 
@@ -1621,7 +1621,7 @@ class App {
                             </div>
                         </div>
                         <div class="card-actions">
-                            <button class="edit-task-btn control-btn">Editar</button><button class="delete-task-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
+                            <button class="edit-task-btn control-btn">Editar</button><button class="delete-task-btn remove-btn"><img src="Assets/icons/Borrar2.svg" alt="Eliminar" class="icon"></button>
                         </div>
                     </div>
                 `;
@@ -1828,7 +1828,7 @@ class App {
                                         <p>${entry.note}</p>
                                         <small>${new Date(entry.date).toLocaleTimeString()}</small>
                                     </div>
-                                    <button class="delete-food-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
+                                <button class="delete-food-btn remove-btn"><img src="Assets/icons/Borrar2.svg" alt="Eliminar" class="icon"></button>
                                 </div>
                             `).join('')}
                         </div>

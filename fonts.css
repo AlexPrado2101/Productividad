@@ -1,0 +1,31 @@
+/*
+  Este archivo define las fuentes locales para la aplicación.
+  Asegúrate de que los archivos .woff2 estén en la carpeta ../fonts/
+*/
+
+/* Roboto Regular (Peso 400) */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/Roboto-Regular.woff2') format('woff2');
+}
+
+/* Roboto Medium (Peso 500) */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../fonts/Roboto-Medium.woff2') format('woff2');
+}
+
+/* Roboto Bold (Peso 700) */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../fonts/Roboto-Bold.woff2') format('woff2');
+}

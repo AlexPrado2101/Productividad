@@ -4,59 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Productividad App</title>
+    <!-- Dependencias locales para funcionamiento offline -->
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Icons+Outlined" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link rel="stylesheet" href="Assets/css/fonts.css">
+    <script src="Assets/js/chart.min.js"></script>
+    <script src="Assets/js/jszip.min.js"></script>
+    <script src="Assets/js/localforage.min.js"></script>
 </head>
 <body>
     <div class="app-container">
         <button class="menu-toggle">
-            <span class="material-icons-outlined">menu</span>
+            <img src="Assets/icons/menu.svg" alt="Menú" class="icon">
         </button>
         <aside class="sidebar">
             <div class="sidebar-header"><br><br>
                 <h2>Menú</h2>
                 <div class="global-search-wrapper">
-                    <span class="material-icons-outlined">search</span>
+                    <img src="Assets/icons/Buscar.svg" alt="Buscar" class="icon">
                     <input type="search" id="global-search-input" placeholder="Buscar en todo...">
                 </div>
             </div>
             <nav class="sidebar-nav">
                 <a href="#" data-page="calendario">
-                    <span class="material-icons-outlined">calendar_today</span>
+                    <img src="Assets/icons/Calendario.svg" alt="" class="icon">
                     <span>Calendario</span>
                 </a>
                 <a href="#" data-page="horarios">
-                    <span class="material-icons-outlined">schedule</span>
+                    <img src="Assets/icons/Horario.svg" alt="" class="icon">
                     <span>Horarios</span>
                 </a>
                 <a href="#" data-page="notas">
-                    <span class="material-icons-outlined">school</span>
+                    <img src="Assets/icons/NotasAcademicas.svg" alt="" class="icon">
                     <span>Notas académicas</span>
                 </a>
                 <a href="#" data-page="ingles">
-                    <span class="material-icons-outlined">language</span>
+                    <img src="Assets/icons/Idiomas.svg" alt="" class="icon">
                     <span>Estudio de inglés</span>
                 </a>
                 <a href="#" data-page="dibujo">
-                    <span class="material-icons-outlined">palette</span>
+                    <img src="Assets/icons/paletaColores.svg" alt="" class="icon">
                     <span>Dibujo</span>
                 </a>
                 <a href="#" data-page="ejercicio">
-                    <span class="material-icons-outlined">fitness_center</span>
+                    <img src="Assets/icons/Entrenamiento1.svg" alt="" class="icon">
                     <span>Ejercicio físico</span>
                 </a>
                 <a href="#" data-page="alimentacion">
-                    <span class="material-icons-outlined">restaurant</span>
+                    <img src="Assets/icons/Alimentacion.svg" alt="" class="icon">
                     <span>Alimentación</span>
                 </a>
                 <a href="#" data-page="tareas">
-                    <span class="material-icons-outlined">list_alt</span>
+                    <img src="Assets/icons/ListaDeTareas.svg" alt="" class="icon">
                     <span>Lista de tareas</span>
                 </a>
                 <a href="#" data-page="ajustes">
-                    <span class="material-icons-outlined">settings</span>
+                    <img src="Assets/icons/Ajustes.svg" alt="" class="icon">
                     <span>Ajustes</span>
                 </a>
             </nav>
@@ -94,19 +96,19 @@
                             <select id="schedule-selector"></select>
                         </div>
                         <div class="schedule-actions">
-                            <button id="new-schedule-btn" class="control-btn"><span class="material-icons-outlined">add</span>Nuevo</button>
-                            <button id="save-schedule-btn" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button>
-                            <button id="delete-schedule-btn" class="control-btn"><span class="material-icons-outlined">delete</span>Eliminar</button>
+                            <button id="new-schedule-btn" class="control-btn"><img src="Assets/icons/añadir2.svg" alt="" class="icon">Nuevo</button>
+                            <button id="save-schedule-btn" class="control-btn"><img src="Assets/icons/Calendario.svg" alt="" class="icon">Guardar</button>
+                            <button id="delete-schedule-btn" class="control-btn"><img src="Assets/icons/Borrar2.svg" alt="" class="icon">Eliminar</button>
                         </div>
                     </div>
 
                     <div class="toolbar">
                         <div class="schedule-edits">
-                            <button id="add-row-btn">+ Fila</button>
-                            <button id="add-col-btn">+ Columna</button>
-                            <button id="remove-row-btn">- Fila</button>
-                            <button id="remove-col-btn">- Columna</button><br><br>
-                            <button id="autogen-modal-btn" class="control-btn"><span class="material-icons-outlined">auto_awesome</span>Autogenerar</button>
+                            <button id="add-row-btn" class="control-btn">+ Fila</button>
+                            <button id="add-col-btn" class="control-btn">+ Columna</button>
+                            <button id="remove-row-btn" class="control-btn">- Fila</button>
+                            <button id="remove-col-btn" class="control-btn">- Columna</button><br><br>
+                            <button id="autogen-modal-btn" class="control-btn"><img src="Assets/icons/Generar.svg" alt="" class="icon">Autogenerar</button>
                         </div>
                     </div>
                 
@@ -152,14 +154,13 @@
                     <!-- Vista Principal: Lista de Materias -->
                     <div id="subjects-list-view">
                         <h2>Mis Materias</h2><br>
-                        <button id="add-subject-btn" class="control-btn"><span class="material-icons-outlined">add</span> Añadir Materia</button>
+                        <button id="add-subject-btn" class="control-btn"><img src="Assets/icons/añadir2.svg" alt="" class="icon"> Añadir Materia</button>
                         <div id="subjects-list"></div>
                     </div>
-
                     <!-- Vista de Detalle: Materia Individual (oculta por defecto) -->
                     <div id="subject-detail-view" style="display: none;">
                         <h2 id="subject-title"></h2><br>
-                        <button id="back-to-subjects-btn" class="control-btn"><span class="material-icons-outlined">arrow_back</span> Volver</button>
+                        <button id="back-to-subjects-btn" class="control-btn"><img src="Assets/icons/undo.svg" alt="" class="icon"> Volver</button>
 
                         <div class="subject-detail-layout">
                             <!-- Columna de Resumen -->
@@ -186,7 +187,7 @@
                                 <div class="tab-switcher">
                                 </div>
                                 <div id="grades-tab-content" class="tab-content active">
-                                    <button id="add-grade-btn" class="control-btn"><span class="material-icons-outlined">add</span> Añadir Nota</button>
+                                    <button id="add-grade-btn" class="control-btn"><img src="Assets/icons/añadir2.svg" alt="" class="icon"> Añadir Nota</button>
                                     <div id="grades-list"></div>
                                 </div>
                             </div>
@@ -195,9 +196,9 @@
                 </div>
 
                 <!-- Modales -->
-                <div id="subject-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Materia</h3><form id="subject-form"><input type="hidden" id="subject-id"><input type="text" id="subject-name-input" placeholder="Nombre de la materia" required><button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button></form></div></div>
-                <div id="grade-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Nota</h3><form id="grade-form"><input type="hidden" id="grade-id"><input type="text" id="grade-title-input" placeholder="Título (ej. Parcial 1)" required><input type="number" id="grade-value-input" placeholder="Nota" step="0.1" min="1" max="5" required><button type="button" id="university-grade-btn" class="control-btn">Modo Universitario</button><select id="grade-category-select"><option value="daily">Nota Diaria</option><option value="appreciation">Apreciación</option><option value="final_exam">Examen Final</option></select><button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button></form></div></div>
-                <div id="task-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Tarea Académica</h3><form id="task-form"><input type="hidden" id="task-id"><input type="text" id="task-title-input" placeholder="Título de la tarea" required><textarea id="task-desc-input" placeholder="Descripción"></textarea><input type="date" id="task-due-date-input" required><button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button></form></div></div>
+                <div id="subject-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Materia</h3><form id="subject-form"><input type="hidden" id="subject-id"><input type="text" id="subject-name-input" placeholder="Nombre de la materia" required><button type="submit" class="control-btn"><img src="Assets/icons/Guardar.svg" alt="" class="icon">Guardar</button></form></div></div>
+                <div id="grade-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Nota</h3><form id="grade-form"><input type="hidden" id="grade-id"><input type="text" id="grade-title-input" placeholder="Título (ej. Parcial 1)" required><input type="number" id="grade-value-input" placeholder="Nota" step="0.1" min="1" max="5" required><button type="button" id="university-grade-btn" class="control-btn">Modo Universitario</button><select id="grade-category-select"><option value="daily">Nota Diaria</option><option value="appreciation">Apreciación</option><option value="final_exam">Examen Final</option></select><button type="submit" class="control-btn"><img src="Assets/icons/Guardar.svg" alt="" class="icon">Guardar</button></form></div></div>
+                <div id="task-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Tarea Académica</h3><form id="task-form"><input type="hidden" id="task-id"><input type="text" id="task-title-input" placeholder="Título de la tarea" required><textarea id="task-desc-input" placeholder="Descripción"></textarea><input type="date" id="task-due-date-input" required><button type="submit" class="control-btn"><img src="Assets/icons/Guardar.svg" alt="" class="icon">Guardar</button></form></div></div>
             </div>
 
             <!-- Página: Estudio de Inglés -->
@@ -205,17 +206,17 @@
                 <h1>Estudio de Inglés</h1><br>
                     <!-- Pestañas -->
                     <div class="tab-switcher">
-                        <button class="tab-btn active" data-tab="vocab">Vocabulario</button>
-                        <button class="tab-btn" data-tab="grammar">Gramática</button>
-                        <button class="tab-btn" data-tab="resources">Recursos</button>
+                        <button class="control-btn" data-tab="vocab">Vocabulario</button>
+                        <button class="control-btn" data-tab="grammar">Gramática</button>
+                        <button class="control-btn" data-tab="resources">Recursos</button>
                     </div><br>
                 
                     <!-- Contenido de Pestañas -->
                     <div id="vocab-tab-content" class="tab-content active">
                         <h3>Mi Vocabulario</h3><br>
                         <div class="toolbar">
-                            <button id="add-vocab-btn" class="control-btn"><span class="material-icons-outlined">add</span>Añadir Palabra</button>
-                            <button id="start-flashcards-btn" class="control-btn"><span class="material-icons-outlined">style</span>Flashcards</button>
+                            <button id="add-vocab-btn" class="control-btn"><img src="Assets/icons/añadir2.svg" alt="" class="icon">Añadir Palabra</button>
+                            <button id="start-flashcards-btn" class="control-btn"><img src="Assets/icons/style.svg" alt="" class="icon">Flashcards</button>
                         </div>
                         <div id="flashcard-view" style="display: none;">
                             <div class="flashcard-container">
@@ -231,20 +232,20 @@
                 
                     <div id="grammar-tab-content" class="tab-content">
                         <h3>Mis Apuntes de Gramática</h3><br>
-                        <button id="add-grammar-btn" class="control-btn"><span class="material-icons-outlined">add</span> Añadir Regla</button>
+                        <button id="add-grammar-btn" class="control-btn"><img src="Assets/icons/añadir2.svg" alt="" class="icon"> Añadir Regla</button>
                         <div id="grammar-list"></div><br>
                     </div>
                 
                     <div id="resources-tab-content" class="tab-content">
                         <h3>Mis Recursos</h3><br>
-                        <button id="add-resource-btn" class="control-btn"><span class="material-icons-outlined">add</span> Subir Recurso</button>
+                        <button id="add-resource-btn" class="control-btn"><img src="Assets/icons/añadir2.svg" alt="" class="icon"> Subir Recurso</button>
                         <div id="resource-gallery"></div>
                     </div>
                 </div>
 
                 <!-- Modales para Inglés -->
-                <div id="vocab-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Nueva Palabra</h3><form id="vocab-form"><input type="hidden" name="id"><input type="text" placeholder="Palabra o Frase" id="vocab-term" required><input type="text" placeholder="Traducción" id="vocab-translation" required><textarea placeholder="Frase de ejemplo" id="vocab-example"></textarea><button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button></form></div></div>
-                <div id="grammar-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Nueva Regla Gramatical</h3><form id="grammar-form"><input type="hidden" name="id"><input type="text" placeholder="Título de la Regla" id="grammar-title" required><textarea placeholder="Descripción y ejemplos" id="grammar-description" required></textarea><button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button></form></div></div>
+                <div id="vocab-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Nueva Palabra</h3><form id="vocab-form"><input type="hidden" name="id"><input type="text" placeholder="Palabra o Frase" id="vocab-term" required><input type="text" placeholder="Traducción" id="vocab-translation" required><textarea placeholder="Frase de ejemplo" id="vocab-example"></textarea><button type="submit" class="control-btn"><img src="Assets/icons/Guardar.svg" alt="" class="icon">Guardar</button></form></div></div>
+                <div id="grammar-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h3>Nueva Regla Gramatical</h3><form id="grammar-form"><input type="hidden" name="id"><input type="text" placeholder="Título de la Regla" id="grammar-title" required><textarea placeholder="Descripción y ejemplos" id="grammar-description" required></textarea><button type="submit" class="control-btn"><img src="Assets/icons/Guardar.svg" alt="" class="icon">Guardar</button></form></div></div>
                 <div id="resource-modal" class="modal">
                     <div class="modal-content">
                         <span class="close-btn">&times;</span>
@@ -270,7 +271,7 @@
                                 <label for="resource-link">Enlace (URL)</label>
                                 <input type="url" placeholder="https://example.com" id="resource-link">
                             </div>
-                            <button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button>
+                            <button type="submit" class="control-btn"><img src="Assets/icons/Guardar.svg" alt="" class="icon">Guardar</button>
                         </form>
                     </div>
                 </div>
@@ -287,7 +288,7 @@
                 <!-- Contenido de Pestaña: Bitácora -->
                 <div id="drawing-log-tab-content" class="tab-content active">
                     <div class="toolbar">
-                        <button id="add-drawing-btn" class="control-btn"><span class="material-icons-outlined">add</span> Nueva Entrada</button>
+                        <button id="add-drawing-btn" class="control-btn"><img src="Assets/icons/añadir2.svg" alt="" class="icon"> Nueva Entrada</button>
                     </div>
                     <div id="drawing-gallery"></div>
                 </div>
@@ -295,7 +296,7 @@
                 <!-- Contenido de Pestaña: Inspiración -->
                 <div id="inspiration-tab-content" class="tab-content">
                     <div class="toolbar">
-                        <button id="add-inspiration-btn" class="control-btn"><span class="material-icons-outlined">add</span> Añadir Inspiración</button>
+                        <button id="add-inspiration-btn" class="control-btn"><img src="Assets/icons/añadir2.svg" alt="" class="icon"> Añadir Inspiración</button>
                     </div>
                     <div id="inspiration-gallery"></div>
                 </div>
@@ -309,7 +310,7 @@
                             <input type="hidden" id="drawing-id">
                             <div class="form-group"><label for="drawing-desc">Descripción:</label><textarea id="drawing-desc" required></textarea></div>
                             <div class="form-group"><label for="drawing-image">Adjuntar Imagen:</label><input type="file" id="drawing-image" accept="image/*" required><img id="drawing-preview" src="" alt="Previsualización" style="max-width: 100%; max-height: 200px; margin-top: 10px; display: none;"></div>
-                            <button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button>
+                            <button type="submit" class="control-btn"><img src="Assets/icons/Guardar.svg" alt="" class="icon">Guardar</button>
                         </form>
                     </div>
                 </div>
@@ -323,7 +324,7 @@
                             <input type="hidden" id="inspiration-id">
                             <div class="form-group"><label for="inspiration-name">Nombre/Referencia:</label><input type="text" id="inspiration-name" required></div>
                             <div class="form-group"><label for="inspiration-image">Adjuntar Imagen:</label><input type="file" id="inspiration-image" accept="image/*" required><img id="inspiration-preview" src="" alt="Previsualización" style="max-width: 100%; max-height: 200px; margin-top: 10px; display: none;"></div>
-                            <button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button>
+                            <button type="submit" class="control-btn"><img src="Assets/icons/Guardar.svg" alt="" class="icon">Guardar</button>
                         </form>
                     </div>
                 </div>
@@ -348,9 +349,9 @@
                             <div class="timer-container">
                                 <span id="main-timer" class="timer-display">00:00:00</span>
                                 <div class="timer-buttons">
-                                    <button id="start-pause-btn" class="control-btn"><span class="material-icons-outlined">play_arrow</span><span id="start-pause-text">Iniciar</span></button>
-                                    <button id="end-session-btn" class="control-btn" disabled><span class="material-icons-outlined">stop</span>Terminar</button>
-                                    <button id="reset-session-btn" class="control-btn" disabled><span class="material-icons-outlined">refresh</span>Reiniciar</button>
+                                    <button id="start-pause-btn" class="control-btn"><img src="Assets/icons/playarrow.svg" alt="" class="icon"><span id="start-pause-text">Iniciar</span></button>
+                                    <button id="end-session-btn" class="control-btn" disabled><img src="Assets/icons/stop.svg" alt="" class="icon">Terminar</button>
+                                    <button id="reset-session-btn" class="control-btn" disabled><img src="Assets/icons/restart.svg" alt="" class="icon">Reiniciar</button>
                                 </div>
                             </div>
                             <div class="routine-selector-container">
@@ -375,7 +376,7 @@
                     <!-- Vista 2: Gestión de Rutinas (Oculta por defecto) -->
                     <div id="routine-management-view" class="view-content" style="display: none;">
                         <h2>Mis Rutinas</h2>
-                        <button id="create-routine-btn" class="control-btn"><span class="material-icons-outlined">add</span>Crear Nueva Rutina</button>
+                        <button id="create-routine-btn" class="control-btn"><img src="Assets/icons/añadir2.svg" alt="" class="icon">Crear Nueva Rutina</button>
                         <div id="routines-list">
                             <!-- La lista de rutinas se cargará aquí -->
                         </div>
@@ -401,7 +402,7 @@
                 </div>
 
                 <!-- Modal para crear/editar rutinas -->
-                <div id="routine-modal" class="modal" style="display: none;"><div class="modal-content"><span class="close-btn">&times;</span><h3 id="modal-title">Crear Rutina</h3><form id="routine-form"><input type="hidden" id="routine-id"><div class="form-group"><label for="routine-name">Nombre de la Rutina:</label><input type="text" id="routine-name" required></div><div id="exercises-container"><!-- Los grupos musculares y ejercicios se añadirán aquí --></div><button type="button" id="add-exercise-group-btn" class="control-btn"><span class="material-icons">add</span>Añadir Grupo Muscular</button><button type="submit" class="control-btn">Guardar Rutina</button></form></div></div>
+                <div id="routine-modal" class="modal" style="display: none;"><div class="modal-content"><span class="close-btn">&times;</span><h3 id="modal-title">Crear Rutina</h3><form id="routine-form"><input type="hidden" id="routine-id"><div class="form-group"><label for="routine-name">Nombre de la Rutina:</label><input type="text" id="routine-name" required></div><div id="exercises-container"><!-- Los grupos musculares y ejercicios se añadirán aquí --></div><button type="button" id="add-exercise-group-btn" class="control-btn"><img src="Assets/icons/añadir2.svg" alt="" class="icon">Añadir Grupo Muscular</button><button type="submit" class="control-btn">Guardar Rutina</button></form></div></div>
             </div> 
 
             <!-- Página: Alimentación -->
@@ -410,7 +411,7 @@
                 
                 <div id="food-log-container">
                     <div class="toolbar">
-                        <button id="add-food-entry-btn" class="control-btn"><span class="material-icons-outlined">add</span> Nuevo Registro</button>
+                        <button id="add-food-entry-btn" class="control-btn"><img src="Assets/icons/añadir2.svg" alt="" class="icon"> Nuevo Registro</button>
                         <div class="filters">
                             <input type="date" id="food-date-filter">
                             <button id="clear-food-filter-btn" class="control-btn">Limpiar Filtro</button>
@@ -427,7 +428,7 @@
                         <form id="food-entry-form">
                             <input type="hidden" id="food-entry-id">
                             <div class="form-group"><label for="food-entry-date">Fecha:</label><input type="date" id="food-entry-date" required></div>
-                            <div class="form-group"><label for="food-entry-note">Nota:</label><textarea id="food-entry-note" placeholder="¿Qué comiste? ¿Cómo te sentiste?" required></textarea></div><div class="form-group"><label for="food-entry-image">Adjuntar Imagen:</label><input type="file" id="food-entry-image" accept="image/*"><img id="image-preview" src="" alt="Previsualización" style="max-width: 100%; max-height: 200px; margin-top: 10px; display: none;"></div><button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button>
+                            <div class="form-group"><label for="food-entry-note">Nota:</label><textarea id="food-entry-note" placeholder="¿Qué comiste? ¿Cómo te sentiste?" required></textarea></div><div class="form-group"><label for="food-entry-image">Adjuntar Imagen:</label><input type="file" id="food-entry-image" accept="image/*"><img id="image-preview" src="" alt="Previsualización" style="max-width: 100%; max-height: 200px; margin-top: 10px; display: none;"></div><button type="submit" class="control-btn"><img src="Assets/icons/Guardar.svg" alt="" class="icon">Guardar</button>
                         </form>
                     </div>
                 </div>
@@ -438,7 +439,7 @@
                 <h1>Lista de Tareas Global</h1>
                 <div id="global-tasks-container">
                     <div class="toolbar">
-                        <button id="add-global-task-btn" class="control-btn"><span class="material-icons-outlined">add</span> Nueva Tarea</button>
+                        <button id="add-global-task-btn" class="control-btn"><img src="Assets/icons/añadir2.svg" alt="" class="icon"> Nueva Tarea</button>
                     </div>
                     <div id="global-tasks-list">
                         <!-- La lista de tareas se renderizará aquí -->
@@ -447,8 +448,7 @@
                 <!-- Modal para Tareas Globales -->
                 <div id="global-task-modal" class="modal">
                     <div class="modal-content">
-                        <span class="close-btn">&times;</span>
-                        <h3>Tarea Global</h3><form id="global-task-form"><input type="hidden" id="global-task-id"><input type="text" id="global-task-title" placeholder="Título de la tarea" required><textarea id="global-task-desc" placeholder="Descripción"></textarea><input type="date" id="global-task-due-date" required><button type="submit" class="control-btn"><span class="material-icons-outlined">save</span>Guardar</button></form>
+                        <span class="close-btn">&times;</span><h3>Tarea Global</h3><form id="global-task-form"><input type="hidden" id="global-task-id"><input type="text" id="global-task-title" placeholder="Título de la tarea" required><textarea id="global-task-desc" placeholder="Descripción"></textarea><input type="date" id="global-task-due-date" required><button type="submit" class="control-btn"><img src="Assets/icons/añadir2.svg" alt="" class="icon">Guardar</button></form>
                     </div>
                 </div>
             </div>
@@ -515,8 +515,8 @@
                         <h2>Gestión de Datos</h2>
                         <p>Guarda una copia de seguridad de todos tus datos o restaura desde un archivo.</p>
                         <div class="data-management-actions">
-                            <button id="export-data-btn" class="control-btn"><span class="material-icons-outlined">file_download</span> Exportar Datos</button>
-                            <label for="import-data-input" class="control-btn"><span class="material-icons-outlined">file_upload</span> Importar Datos</label>
+                            <button id="export-data-btn" class="control-btn"><img src="Assets/icons/download.svg" alt="" class="icon"> Exportar Datos</button>
+                            <label for="import-data-input" class="control-btn"><img src="Assets/icons/upload.svg" alt="" class="icon"> Importar Datos</label>
                             <input type="file" id="import-data-input" accept=".zip" style="display: none;">
                         </div>
                     </div>
@@ -526,9 +526,9 @@
                         <h2>Fondo de Pantalla</h2>
                         <p>Selecciona una imagen o color para personalizar el fondo de la aplicación.</p>
                         <div class="data-management-actions">
-                            <label for="background-image-input" class="control-btn"><span class="material-icons-outlined">image</span> Seleccionar Imagen</label>
+                            <label for="background-image-input" class="control-btn"><img src="Assets/icons/image.svg" alt="" class="icon"> Seleccionar Imagen</label>
                             <input type="file" id="background-image-input" accept="image/*" style="display: none;">
-                            <button id="remove-background-btn" class="control-btn remove-btn"><span class="material-icons-outlined">delete</span> Quitar Fondo</button>
+                            <button id="remove-background-btn" class="control-btn remove-btn"><img src="Assets/icons/Borrar2.svg" alt="" class="icon"> Quitar Fondo</button>
                         </div>
                         <div class="bg-color-btns" id="bg-color-btns">
                             <button class="bg-color-btn" data-color="#4D6473" title="#4D6473"></button>
