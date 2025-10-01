@@ -1,100 +1,220 @@
 Fase 1: 🏗️ Cimientos, Estructura y Personalización Visual
 En esta fase inicial, nos enfocaremos en crear el esqueleto de la aplicación, la navegación principal y el sistema de personalización visual. Esto es crucial porque todas las demás funcionalidades dependerán de esta base.
-1.	Estructura de Archivos:
-o	index.html: Contendrá la estructura principal, incluyendo el contenedor para el menú lateral (sidebar) y el área de contenido principal.
-o	style.css: Incluirá todos los estilos. Define aquí las variables CSS para los colores primarios y secundarios, que serán manipuladas con JavaScript.
-o	script.js: Contendrá la lógica principal de la aplicación, como el enrutamiento y la manipulación del DOM.
-2.	Menú de Navegación Lateral (Sidebar):
-o	Debe ser funcional, mostrando las secciones: Horarios, Notas académicas, Estudio de inglés, Dibujo, Ejercicio físico, Lista de tareas y Ajustes.
-o	Totalmente Responsivo: En escritorio, debe ser visible. En dispositivos móviles, debe colapsar en un menú de hamburguesa que se despliega al tocarlo.
-o	Al ocultarse, el contenido principal debe ajustarse correctamente, sin quedar elementos pegados al borde.
-3.	Módulo de Ajustes ⚙️:
-o	Implementa la lógica de personalización visual.
-o	Selector de Tema: Un interruptor para cambiar entre Modo Claro y Modo Oscuro.
-o	Paleta de Colores:
-	Color Primario (Fondo): Dos opciones: Blanco y Negro.
-	Color Secundario (Acento): Ocho opciones predefinidas: Azul claro, Morado, Rosado, Rojo, Verde, Amarillo, Negro y Blanco. Estos colores se aplicarán a botones, íconos, bordes y elementos activos.
-o	Persistencia de Ajustes: Las preferencias de tema y color del usuario deben guardarse en localStorage y cargarse cada vez que se abre la aplicación.
-4.	Estructura de Plantillas (Modularidad):
-o	Crea una función en script.js que cargue el contenido de una sección en el área principal al hacer clic en una opción del menú.
-o	Prepara archivos HTML o plantillas de JS para cada sección (ej. ejercicio.html, notas.html). Inicialmente, pueden contener solo un título para verificar que la navegación funciona.
-________________________________________
+
+Estructura de Archivos:
+
+index.html: Contendrá la estructura principal, incluyendo el contenedor para el menú lateral (sidebar) y el área de contenido principal. Se agregará un <div id="background-container"></div> para el fondo personalizable.
+
+style.css: Incluirá todos los estilos, con variables CSS (--primary-color, --secondary-color, etc.) para los colores y una clase para el fondo personalizado.
+
+script.js: Contendrá la lógica principal, incluyendo el enrutamiento y la manipulación del DOM. Se agregarán funciones para guardar y cargar las preferencias del usuario.
+
+Menú de Navegación Lateral (Sidebar):
+
+Debe ser funcional, mostrando las secciones: Horarios, Notas académicas, Estudio de inglés, Dibujo, Ejercicio físico, Lista de tareas, Bitácora de alimentación y Ajustes.
+
+Totalmente Responsivo: En escritorio, debe ser visible. En dispositivos móviles, debe colapsar en un menú de hamburguesa que se despliega al tocarlo. Al ocultarse, el contenido principal debe ajustarse correctamente.
+
+Módulo de Ajustes ⚙️:
+
+Implementa la lógica de personalización visual.
+
+Selector de Tema: Un interruptor para cambiar entre Modo Claro y Modo Oscuro.
+
+Paleta de Colores:
+
+Color Primario (Fondo): Dos opciones: Blanco y Negro.
+
+Color Secundario (Acento): Ocho opciones predefinidas: Azul claro, Morado, Rosado, Rojo, Verde, Amarillo, Negro y Blanco. Estos colores se aplicarán a botones, íconos, bordes y elementos activos.
+
+Fondo de Pantalla Personalizable:
+
+Se agregará una opción para que el usuario pueda subir una imagen. Esta imagen se establecerá como fondo en todo el <body> de la aplicación, con un estilo de background-size: cover y background-attachment: fixed para un efecto visual agradable.
+
+El sistema debe validar que la imagen sea un archivo válido (JPG, PNG).
+
+Persistencia de Ajustes: Las preferencias de tema, color y el fondo de pantalla deben guardarse en localStorage y cargarse cada vez que se abre la aplicación.
+
+Estructura de Plantillas (Modularidad):
+
+Crea una función en script.js que cargue el contenido de una sección en el área principal al hacer clic en una opción del menú.
+
+Prepara archivos HTML o plantillas de JS para cada sección (ej. ejercicio.html, notas.html). Inicialmente, pueden contener solo un título para verificar que la navegación funciona.
+
 Fase 2: 💪 Módulo de Ejercicio Físico (Funcionalidad Principal)
 Esta es la sección más compleja y servirá como prueba de concepto para la interacción de datos y la interfaz de usuario dinámica. La vista de "Control de Sesión" y "Rutina Actual" deben estar en la misma pantalla para una experiencia fluida.
-1.	Gestión de Rutinas:
-o	Crea la interfaz para que los usuarios puedan crear, editar y eliminar plantillas de rutinas.
-o	Cada plantilla debe permitir agregar ejercicios clasificados por grupo muscular.
-o	Campos por ejercicio: Nombre, series, repeticiones, peso y notas.
-2.	Vista de Sesión Activa:
-o	Temporizador Principal: Un cronómetro grande y visible en la parte superior (HH:MM:SS).
-o	Botones de Control:
-	Iniciar Entrenamiento: Inicia el temporizador principal. Cambia a Pausar.
-	Terminar Sesión: Detiene el temporizador. Muestra una ventana de confirmación y, al aceptar, guarda la sesión completa en la bitácora.
-	Reiniciar: Resetea el temporizador y el progreso de la rutina actual.
-o	Visualización de la Rutina:
-	Los grupos musculares deben ser bloques colapsables.
-	Cada ejercicio mostrará sus series con un checkbox.
-	Permitir editar/eliminar series individualmente.
-	Botón + Añadir Serie para agregar series dinámicamente.
-	Botón Terminar Serie: Al hacer clic, marca todos los checkboxes de ese ejercicio e inicia un temporizador de descanso visible (ej. 3 min), con un botón para "Saltar Descanso".
-3.	Bitácora Automática 📖:
-o	Al "Terminar Sesión", se debe crear una nueva entrada en la bitácora.
-o	La entrada registrará: Fecha, duración total, nombre de la rutina, y un desglose de los ejercicios realizados (reps, peso, tiempo de descanso por serie).
-o	La bitácora debe ser una lista de entradas, cada una con opción de editar o eliminar (con confirmación).
-________________________________________
+
+Gestión de Rutinas:
+
+Crea la interfaz para que los usuarios puedan crear, editar y eliminar plantillas de rutinas.
+
+Cada plantilla debe permitir agregar ejercicios clasificados por grupo muscular.
+
+Campos por ejercicio: Nombre, series, repeticiones, peso y notas.
+
+Validaciones: Se debe validar que los campos de series y repeticiones sean números positivos.
+
+Interactividad: Implementa animaciones suaves al añadir o eliminar ejercicios.
+
+Vista de Sesión Activa:
+
+Temporizador Principal: Un cronómetro grande y visible en la parte superior (HH:MM:SS) con una tipografía atractiva.
+
+Botones de Control:
+
+Iniciar Entrenamiento: Inicia el temporizador principal. Cambia a Pausar.
+
+Terminar Sesión: Detiene el temporizador. Muestra una ventana de confirmación con un estilo atractivo y, al aceptar, guarda la sesión completa en la bitácora.
+
+Reiniciar: Resetea el temporizador y el progreso de la rutina actual.
+
+Visualización de la Rutina:
+
+Los grupos musculares deben ser bloques colapsables con íconos representativos.
+
+Cada ejercicio mostrará sus series con un checkbox y un campo para ingresar el peso real de la serie.
+
+Permitir editar/eliminar series individualmente.
+
+Botón + Añadir Serie para agregar series dinámicamente.
+
+Botón Terminar Serie: Al hacer clic, marca todos los checkboxes de ese ejercicio e inicia un temporizador de descanso visible (ej. 3 min), con un botón para "Saltar Descanso".
+
+Bitácora Automática 📖:
+
+Al "Terminar Sesión", se debe crear una nueva entrada en la bitácora.
+
+La entrada registrará: Fecha, duración total, nombre de la rutina, y un desglose de los ejercicios realizados (reps, peso, tiempo de descanso por serie).
+
+La bitácora debe ser una lista de entradas, cada una con opción de editar o eliminar (con confirmación).
+
 Fase 3: 🎓 Módulo de Notas Académicas y Tareas (Organización Detallada)
 Esta fase se centra en herramientas de organización académica con cálculos automáticos y categorización.
-1.	Estructura General:
-o	Al entrar en "Notas académicas", el usuario debe poder crear y nombrar materias. Cada materia será una sección independiente.
-o	Dentro de cada materia, habrá dos pestañas: Tareas y Calificaciones.
-2.	Pestaña de Calificaciones:
-o	Dentro de una materia, el usuario debe definir el valor porcentual (%) de tres categorías: Notas Diarias, Apreciación y Examen Final.
-o	Permitir agregar notas individuales. Al agregar una nota, el usuario le pone un título (ej. "Parcial 1") y la asigna a una de las tres categorías.
-o	El sistema debe calcular y mostrar en tiempo real el promedio de cada categoría y el promedio final de la materia basado en los porcentajes.
-3.	Pestaña de Tareas:
-o	Funcionalidad de To-Do list.
-o	Al añadir una tarea, debe incluir: Título, Descripción, y Fecha de Entrega. La Fecha de Creación se asigna automáticamente.
-o	Las tareas se mostrarán como tarjetas con un indicador de color según la proximidad de la fecha de entrega:
-	Rojo: Faltan 3 días o menos (o está vencida).
-	Amarillo: Faltan 7 días o menos.
-	Verde: Faltan más de 7 días.
-o	Permitir marcar tareas como completadas, editarlas y eliminarlas.
-________________________________________
-Fase 4: 🎨 Módulos Creativos y de Estudio
+
+Estructura General:
+
+Al entrar en "Notas académicas", el usuario debe poder crear y nombrar materias. Cada materia será una sección independiente, con un diseño de tarjeta personalizable.
+
+Dentro de cada materia, habrá dos pestañas: Tareas y Calificaciones.
+
+Pestaña de Calificaciones:
+
+Dentro de una materia, el usuario debe definir el valor porcentual (%) de tres categorías: Notas Diarias, Apreciación y Examen Final. Se validará que la suma de los porcentajes sea 100%.
+
+Permitir agregar notas individuales. Al agregar una nota, el usuario le pone un título (ej. "Parcial 1") y la asigna a una de las tres categorías. Se validará que el valor de la nota esté entre 0 y 100.
+
+El sistema debe calcular y mostrar en tiempo real el promedio de cada categoría y el promedio final de la materia basado en los porcentajes.
+
+Pestaña de Tareas:
+
+Funcionalidad de To-Do list.
+
+Al añadir una tarea, debe incluir: Título, Descripción, y Fecha de Entrega (con un selector de fecha fácil de usar).
+
+Las tareas se mostrarán como tarjetas con un indicador de color según la proximidad de la fecha de entrega:
+
+Rojo: Faltan 3 días o menos (o está vencida).
+
+Amarillo: Faltan 7 días o menos.
+
+Verde: Faltan más de 7 días.
+
+Permitir marcar tareas como completadas, editarlas y eliminarlas con animaciones de transición.
+
+Fase 4: 🎨 Módulos Creativos y de Estudio + Nuevo Módulo de Bitácora de Alimentación
 Esta fase se enfoca en las secciones que manejan contenido multimedia y de texto de forma estructurada.
-1.	Bitácora de Dibujo 🎨:
-o	Formulario para añadir una nueva entrada con: Descripción (área de texto), Fecha y Hora, y un campo para adjuntar una imagen.
-o	Las entradas se visualizarán como tarjetas visuales.
-o	Ajuste de Diseño: Las tarjetas deben ser más delgadas y compactas que en el diseño de referencia para optimizar el espacio vertical.
-2.	Estudio de Inglés 📖:
-o	Implementa una interfaz con tres pestañas: Vocabulario, Gramática y Recursos.
-o	Vocabulario: Formulario para añadir palabras o frases, incluyendo campos para la traducción y frases de ejemplo.
-o	Gramática: Un área para registrar reglas gramaticales con títulos y descripciones.
-o	Recursos de Apoyo: Funcionalidad para subir y visualizar archivos (PDF, Word, Excel, PPT, JPG, PNG, JPEG). Utiliza un carrusel dinámico o una galería para mostrar los recursos subidos.
-3.	Creador de Horarios Personalizado ⏰:
-o	La tabla del horario debe ser totalmente personalizable.
-o	Permitir al usuario escribir directamente en las celdas.
-o	Funcionalidades de Edición:
-	Borrar columnas (días).
-	Editar el intervalo de tiempo de una fila específica.
-	Definir el rango horario visible (hora de inicio y fin).
-o	Guardado de Horarios: El usuario debe poder guardar múltiples horarios personalizados (ej. "Horario Semestre 1", "Horario Vacaciones"). Estos horarios deben persistir en localStorage.
-________________________________________
+
+Bitácora de Dibujo 🎨:
+
+Formulario para añadir una nueva entrada con: Descripción (área de texto), Fecha y Hora, y un campo para adjuntar una imagen.
+
+Las entradas se visualizarán como tarjetas visuales, con una animación de zoom al pasar el ratón.
+
+Validación: Se validará que el archivo subido sea una imagen.
+
+Ajuste de Diseño: Las tarjetas deben ser más delgadas y compactas que en el diseño de referencia para optimizar el espacio vertical.
+
+Estudio de Inglés 📖:
+
+Implementa una interfaz con tres pestañas: Vocabulario, Gramática y Recursos.
+
+Vocabulario: Formulario para añadir palabras o frases, incluyendo campos para la traducción y frases de ejemplo.
+
+Gramática: Un área para registrar reglas gramaticales con títulos y descripciones.
+
+Recursos de Apoyo: Funcionalidad para subir y visualizar archivos (PDF, Word, Excel, PPT, JPG, PNG, JPEG). Utiliza un carrusel dinámico o una galería para mostrar los recursos subidos.
+
+Creador de Horarios Personalizado ⏰:
+
+La tabla del horario debe ser totalmente personalizable, con la posibilidad de arrastrar y soltar celdas.
+
+Permitir al usuario escribir directamente en las celdas.
+
+Funcionalidades de Edición:
+
+Borrar columnas (días).
+
+Editar el intervalo de tiempo de una fila específica.
+
+Definir el rango horario visible (hora de inicio y fin).
+
+Guardado de Horarios: El usuario debe poder guardar múltiples horarios personalizados (ej. "Horario Semestre 1", "Horario Vacaciones"). Estos horarios deben persistir en localStorage.
+
+Bitácora de Alimentación 🥗 (NUEVO):
+
+Interfaz amigable con un diseño de calendario y tarjetas para cada entrada.
+
+Formulario para una nueva entrada:
+
+Fecha: Un selector de fecha intuitivo.
+
+Nota: Un área de texto para la descripción de la comida.
+
+Imagen: Un campo para adjuntar una o varias fotos de la comida. Se validará que sea un archivo de imagen.
+
+Visualización y Filtrado:
+
+Las entradas se mostrarán en un formato de bitácora, con la fecha y la imagen o imágenes de la comida.
+
+Se implementarán filtros por fecha (ej. "Hoy", "Últimos 7 días") y por palabra clave en la nota.
+
+Se podrá editar y eliminar cada entrada con un botón visible al pasar el ratón por la tarjeta.
+
+Interactividad: Implementa un efecto de galería al hacer clic en las imágenes para verlas en grande.
+
 Fase 5: ✨ Integración Final, Persistencia y Pulido
-Esta última fase une todas las funcionalidades y prepara la aplicación para su despliegue final.
-1.	Calendario de Progreso Global 📅:
-o	Implementa una vista de calendario.
-o	Los días en los que se haya completado una actividad (un entrenamiento, una tarea, un estudio de inglés, etc.) deben mostrar un punto verde.
-o	Al hacer clic en un día con un punto, debe aparecer una vista (modal o desplegable) que liste las actividades realizadas ese día (ej. "Ejercicio: Rutina de Pecho", "Tarea completada: Ensayo de Historia").
-2.	Buscador Global 🔍:
-o	Añade una barra de búsqueda que permita encontrar cualquier nota, tarea, ejercicio o recurso por palabra clave en toda la aplicación.
-3. Persistencia de Datos Avanzada (Exportar/Importar con .zip) 📂:
-•	Guardado Local: Toda la información generada en la aplicación (rutinas, notas, tareas, dibujos, etc.) debe persistir automáticamente en el localStorage del navegador.
-•	Función de Exportación: Se debe implementar un botón de "Exportar Datos". Al presionarlo, la aplicación deberá:
-1.	Recopilar toda la información del localStorage.
-2.	Convertir estos datos en un único archivo de texto con formato JSON.
-3.	Empaquetar este archivo JSON dentro de un archivo .zip.
-4.	Iniciar la descarga de este archivo .zip en el dispositivo del usuario. (Esto asegura que en el futuro se puedan incluir otros archivos, como las imágenes de la sección de dibujo, dentro del mismo paquete).
-•	Función de Importación: Se debe implementar un botón de "Importar Datos" que permita al usuario seleccionar un archivo .zip desde su dispositivo. Al cargarlo, la aplicación deberá:
-1.	Descomprimir el archivo y leer el JSON contenido en él.
-2.	Presentar al usuario dos opciones claras: "Sobrescribir" (borrar todos los datos actuales y reemplazarlos con los del archivo) o "Fusionar" (añadir los datos importados a los existentes, idealmente evitando duplicados).
+Esta última fase une todas las funcionalidades y prepara la aplicación para su despliegue final. El proyecto debe ser optimizado para funcionar como un WebView en Android Studio, lo que significa que la navegación y el rendimiento deben ser fluidos, y se evitarán dependencias externas pesadas.
+
+Calendario de Progreso Global 📅:
+
+Implementa una vista de calendario.
+
+Los días en los que se haya completado una actividad (un entrenamiento, una tarea, un estudio de inglés, etc.) deben mostrar un punto verde.
+
+Al hacer clic en un día con un punto, debe aparecer una vista (modal o desplegable) que liste las actividades realizadas ese día (ej. "Ejercicio: Rutina de Pecho", "Tarea completada: Ensayo de Historia").
+
+Buscador Global 🔍:
+
+Añade una barra de búsqueda en la cabecera que permita encontrar cualquier nota, tarea, ejercicio, o recurso por palabra clave en toda la aplicación.
+
+Se implementará un sistema de búsqueda reactiva, mostrando los resultados en tiempo real a medida que el usuario escribe.
+
+Persistencia de Datos Avanzada (Exportar/Importar con .zip) 📂:
+
+Guardado Local: Toda la información generada en la aplicación (rutinas, notas, tareas, dibujos, etc.) debe persistir automáticamente en el localStorage del navegador.
+
+Función de Exportación: Se debe implementar un botón de "Exportar Datos". Al presionarlo, la aplicación deberá:
+
+Recopilar toda la información del localStorage.
+
+Convertir estos datos en un único archivo de texto con formato JSON.
+
+Empaquetar este archivo JSON dentro de un archivo .zip.
+
+Iniciar la descarga de este archivo .zip en el dispositivo del usuario. (Esto asegura que en el futuro se puedan incluir otros archivos, como las imágenes de la sección de dibujo, dentro del mismo paquete).
+
+Función de Importación: Se debe implementar un botón de "Importar Datos" que permita al usuario seleccionar un archivo .zip desde su dispositivo. Al cargarlo, la aplicación deberá:
+
+Descomprimir el archivo y leer el JSON contenido en él.
+
+Presentar al usuario dos opciones claras: "Sobrescribir" (borrar todos los datos actuales y reemplazarlos con los del archivo) o "Fusionar" (añadir los datos importados a los existentes, idealmente evitando duplicados).
