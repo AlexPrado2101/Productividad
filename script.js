@@ -73,11 +73,13 @@ class App {
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = (event) => {
-                        localStorage.setItem('appBackgroundImage', event.target.result);
+                    reader.onload = (event) => { // Sigue usando DataURL para el fondo por simplicidad de CSS
+                        const backgroundImageDataUrl = event.target.result;
+                        localStorage.setItem('appBackgroundImage', backgroundImageDataUrl);
+                        localStorage.removeItem('appBgColor'); // Asegura que el color no sobreescriba la imagen
                         applySettings();
                     };
-                    reader.readAsDataURL(file);
+                    reader.readAsDataURL(file); // Para CSS background-image, DataURL es lo más directo.
                 }
             });
         }
@@ -85,6 +87,7 @@ class App {
         if (removeBackgroundBtn) {
             removeBackgroundBtn.addEventListener('click', () => {
                 localStorage.removeItem('appBackgroundImage');
+                localStorage.removeItem('appBgColor');
                 applySettings();
             });
         }
@@ -113,6 +116,7 @@ class App {
                 btn.addEventListener('click', () => {
                     const color = btn.getAttribute('data-color');
                     localStorage.setItem('appBgColor', color);
+                    localStorage.removeItem('appBackgroundImage'); // Quitar imagen si se pone color
                     document.body.style.backgroundImage = 'none';
                     document.body.style.backgroundColor = color;
                     bgColorBtns.querySelectorAll('.bg-color-btn').forEach(b => b.classList.remove('active'));
@@ -343,10 +347,10 @@ class App {
                 } else if (type === 'resources') {
                     const fileInput = form.querySelector('#resource-file');
                     const file = fileInput.files[0];
-                    let fileData = null;
+                    let fileDataUrl = null; // Cambiamos el nombre para mayor claridad
 
                     if (file) {
-                        fileData = await new Promise((resolve) => {
+                        fileDataUrl = await new Promise((resolve) => {
                             const reader = new FileReader();
                             reader.onload = (e) => resolve(e.target.result);
                             reader.readAsDataURL(file);
@@ -355,13 +359,13 @@ class App {
 
                     const existingItem = data.resources.find(i => i.id === id);
 
-                    if (!fileData && !existingItem) {
+                    if (!fileDataUrl && !existingItem) {
                         alert('Por favor, selecciona un archivo.');
                         return;
                     }
 
                     newItem = { id, name: form.querySelector('#resource-name').value };
-                    newItem.fileData = fileData || (existingItem ? existingItem.fileData : null); // Keep old file if new one isn't provided
+                    newItem.fileData = fileDataUrl || (existingItem ? existingItem.fileData : null); // Keep old file if new one isn't provided
 
                     if (!newItem.fileData) {
                         alert('Por favor, selecciona un archivo.');
@@ -625,15 +629,15 @@ class App {
             const render = () => {
                 gallery.innerHTML = drawings.map(d => `
                     <div class="drawing-card" data-id="${d.id}">
-                        <img src="${d.imageBase64}" alt="${d.description}">
+                        <img src="${d.imageUrl}" alt="${d.description}">
                         <div class="drawing-card-content">
                             <p>${d.description.substring(0, 50)}...</p>
                             <small>${new Date(d.date).toLocaleString()}</small>
-                        </div><button class="delete-drawing-btn remove-btn"><span class="material-icons-outlined">delete</span></button>
+                        </div>
+                        <button class="delete-drawing-btn remove-btn"><img src="Assets/icons/Borrar2.svg" alt="Eliminar" class="icon"></button>
                     </div><button class="delete-drawing-btn remove-btn"><img src="Assets/icons/Borrar2.svg" alt="Eliminar" class="icon"></button>
                 `).join('');
             };
-
             page.querySelector('#add-drawing-btn').addEventListener('click', () => {
                 form.reset();
                 form.querySelector('#drawing-id').value = '';
@@ -647,25 +651,30 @@ class App {
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = (event) => {
-                        preview.src = event.target.result;
+                    reader.onload = (event) => { // Usamos FileReader solo para la previsualización
+                        preview.src = event.target.result; // Esto es un DataURL
                         preview.style.display = 'block';
                     };
                     reader.readAsDataURL(file);
                 }
             });
 
-            form.addEventListener('submit', e => {
+            form.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                if (!preview.src || !preview.src.startsWith('data:image')) {
+                const imageFile = imageInput.files[0];
+                if (!imageFile) {
                     alert('Por favor, selecciona un archivo de imagen válido.');
                     return;
                 }
+                // Guardamos el archivo como Blob en localForage (IndexedDB)
+                const imageId = `drawing_${Date.now()}`;
+                await localforage.setItem(imageId, imageFile);
+
                 const newDrawing = {
-                    id: Date.now(),
+                    id: imageId, // Usamos el mismo ID para el registro y el archivo
                     description: form.querySelector('#drawing-desc').value,
                     date: new Date().toISOString(),
-                    imageBase64: preview.src
+                    imageUrl: URL.createObjectURL(imageFile) // Creamos una URL temporal para mostrar la imagen
                 };
                 drawings.unshift(newDrawing);
                 save();
@@ -673,16 +682,30 @@ class App {
                 modal.style.display = 'none';
             });
 
-            gallery.addEventListener('click', e => {
+            gallery.addEventListener('click', async (e) => {
                 if (e.target.closest('.delete-drawing-btn')) {
                     const card = e.target.closest('.drawing-card');
                     if (confirm('¿Eliminar este dibujo?')) {
-                        drawings = drawings.filter(d => d.id != card.dataset.id);
+                        const drawingId = card.dataset.id;
+                        // Eliminar la entrada del log y el archivo de localForage
+                        drawings = drawings.filter(d => d.id != drawingId);
+                        await localforage.removeItem(drawingId);
                         save();
                         render();
                     }
                 }
             });
+
+            // Al cargar, convertir los blobs guardados a URLs visibles
+            const updateImageUrls = async () => {
+                for (const drawing of drawings) {
+                    const imageBlob = await localforage.getItem(drawing.id);
+                    if (imageBlob) {
+                        drawing.imageUrl = URL.createObjectURL(imageBlob);
+                    }
+                }
+                render();
+            };
 
             render();
         };
@@ -700,7 +723,7 @@ class App {
             const render = () => {
                 gallery.innerHTML = inspirations.map(d => `
                     <div class="drawing-card" data-id="${d.id}">
-                        <img src="${d.imageBase64}" alt="${d.name}">
+                        <img src="${d.imageUrl}" alt="${d.name}">
                         <div class="drawing-card-content">
                             <p>${d.name}</p>
                         </div><button class="delete-inspiration-btn remove-btn"><img src="Assets/icons/Borrar2.svg" alt="Eliminar" class="icon"></button>
@@ -721,24 +744,29 @@ class App {
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = (event) => {
-                        preview.src = event.target.result;
+                    reader.onload = (event) => { // Solo para previsualización
+                        preview.src = event.target.result; // DataURL
                         preview.style.display = 'block';
                     };
                     reader.readAsDataURL(file);
                 }
             });
 
-            form.addEventListener('submit', e => {
+            form.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                if (!preview.src || !preview.src.startsWith('data:image')) {
+                const imageFile = imageInput.files[0];
+                if (!imageFile) {
                     alert('Por favor, selecciona un archivo de imagen válido.');
                     return;
                 }
+
+                const imageId = `inspiration_${Date.now()}`;
+                await localforage.setItem(imageId, imageFile);
+
                 const newInspiration = {
-                    id: Date.now(),
+                    id: imageId,
                     name: form.querySelector('#inspiration-name').value,
-                    imageBase64: preview.src
+                    imageUrl: URL.createObjectURL(imageFile)
                 };
                 inspirations.unshift(newInspiration);
                 save();
@@ -746,16 +774,28 @@ class App {
                 modal.style.display = 'none';
             });
 
-            gallery.addEventListener('click', e => {
+            gallery.addEventListener('click', async (e) => {
                 if (e.target.closest('.delete-inspiration-btn')) {
                     const card = e.target.closest('.drawing-card');
                     if (confirm('¿Eliminar esta inspiración?')) {
-                        inspirations = inspirations.filter(d => d.id != card.dataset.id);
+                        const inspirationId = card.dataset.id;
+                        inspirations = inspirations.filter(d => d.id != inspirationId);
+                        await localforage.removeItem(inspirationId);
                         save();
                         render();
                     }
                 }
             });
+
+            const updateInspirationImageUrls = async () => {
+                for (const item of inspirations) {
+                    const imageBlob = await localforage.getItem(item.id);
+                    if (imageBlob) {
+                        item.imageUrl = URL.createObjectURL(imageBlob);
+                    }
+                }
+                render();
+            };
 
             render();
         };
@@ -1823,7 +1863,7 @@ class App {
                         <div class="food-entries">
                             ${groupedByDay[day].map(entry => `
                                 <div class="drawing-card" data-id="${entry.id}">
-                                    ${entry.imageBase64 ? `<img src="${entry.imageBase64}" alt="Comida">` : ''}
+                                    ${entry.imageUrl ? `<img src="${entry.imageUrl}" alt="Comida">` : ''}
                                     <div class="drawing-card-content">
                                         <p>${entry.note}</p>
                                         <small>${new Date(entry.date).toLocaleTimeString()}</small>
@@ -1836,15 +1876,24 @@ class App {
                 `).join('') || '<p>No hay registros para la semana seleccionada.</p>';
             };
 
-            const filterAndRender = () => {
+            const filterAndRender = async () => {
                 const selectedDate = weekPicker.value ? new Date(weekPicker.value) : new Date();
                 const week = getWeekRange(selectedDate);
                 weekDisplay.textContent = `Semana del ${week.start.toLocaleDateString()} al ${week.end.toLocaleDateString()}`;
 
-                const filtered = foodLog.filter(entry => {
+                let filtered = foodLog.filter(entry => {
                     const entryDate = new Date(entry.date);
                     return entryDate >= week.start && entryDate <= week.end;
                 });
+
+                // Cargar URLs de las imágenes desde localForage
+                for (const entry of filtered) {
+                    if (entry.imageId) {
+                        const imageBlob = await localforage.getItem(entry.imageId);
+                        if (imageBlob) entry.imageUrl = URL.createObjectURL(imageBlob);
+                    }
+                }
+
                 render(filtered);
             };
 
@@ -1874,7 +1923,7 @@ class App {
             imageInput.addEventListener('change', e => {
                 const file = e.target.files[0];
                 if (file) {
-                    const reader = new FileReader();
+                    const reader = new FileReader(); // Solo para previsualización
                     reader.onload = (event) => {
                         preview.src = event.target.result;
                         preview.style.display = 'block';
@@ -1883,13 +1932,21 @@ class App {
                 }
             });
 
-            form.addEventListener('submit', e => {
+            form.addEventListener('submit', async (e) => {
                 e.preventDefault();
+                const imageFile = imageInput.files[0];
+                let imageId = null;
+
+                if (imageFile) {
+                    imageId = `food_${Date.now()}`;
+                    await localforage.setItem(imageId, imageFile);
+                }
+
                 const newEntry = {
                     id: Date.now(),
                     date: form.querySelector('#food-entry-date').value,
                     note: form.querySelector('#food-entry-note').value,
-                    imageBase64: preview.src.startsWith('data:image') ? preview.src : null
+                    imageId: imageId // Guardamos la referencia al archivo en localForage
                 };
                 foodLog.unshift(newEntry);
                 save();
@@ -1897,7 +1954,7 @@ class App {
                 modal.style.display = 'none';
             });
 
-            grid.addEventListener('click', e => {
+            grid.addEventListener('click', async (e) => {
                 if (e.target.closest('.delete-food-btn')) {
                     const card = e.target.closest('.drawing-card');
                     if (confirm('¿Eliminar este registro?')) {
@@ -1905,6 +1962,11 @@ class App {
                         save();
                         filterAndRender();
                     }
+                    const entryToDelete = foodLog.find(entry => entry.id == card.dataset.id);
+                    if (entryToDelete && entryToDelete.imageId) {
+                        await localforage.removeItem(entryToDelete.imageId);
+                    }
+
                 }
             });
 
@@ -2017,4 +2079,11 @@ class App {
 
 document.addEventListener('DOMContentLoaded', () => {
     new App();
+});
+
+// Configuración de localForage para usar IndexedDB preferentemente.
+// Esto es el comportamiento por defecto, pero lo hacemos explícito para mayor claridad.
+localforage.config({
+    driver: [localforage.INDEXEDDB, localforage.WEBSQL, localforage.LOCALSTORAGE],
+    name: 'ProductividadApp'
 });
